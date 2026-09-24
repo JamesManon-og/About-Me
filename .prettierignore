@@ -1,0 +1,13 @@
+.next/
+out/
+build/
+coverage/
+playwright-report/
+test-results/
+blob-report/
+bun.lock
+next-env.d.ts
+docs/private/
+
+# Hand-written docs keep their authored formatting.
+*.md
