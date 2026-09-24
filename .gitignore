@@ -1,0 +1,30 @@
+# dependencies
+node_modules/
+.pnp*
+
+# next.js / build
+.next/
+out/
+build/
+dist/
+*.tsbuildinfo
+next-env.d.ts
+
+# testing
+coverage/
+playwright-report/
+test-results/
+blob-report/
+
+# env (never commit secrets)
+.env
+.env*.local
+
+# private research about James: derived from resumes, repos and session history.
+# Keep local only. Public-safe facts are published through content/ and data/.
+docs/private/
+
+# misc
+.DS_Store
+*.pem
+.vercel
