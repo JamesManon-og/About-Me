@@ -71,3 +71,8 @@ Each returns `{ data, sources }`. There are no write, fetch or exec tools, ever.
 | 2026-09-24 | Env validated by importing `lib/env.ts` from `next.config.ts` | `dev` and `build` fail fast on bad values. Next loads `.env*` before the config |
 | 2026-09-24 | ESLint 9 (scaffold default), not 10 | `eslint-config-next` plugins not yet confirmed on 10 |
 | 2026-09-24 | `turbopack.root` and `outputFileTracingRoot` pinned to the repo | A lockfile in a parent folder was picked up as the workspace root |
+| 2026-09-24 | Content Markdown stays out of Prettier. Frontmatter is flat `key: value` lines read by a small parser in `lib/knowledge/content.ts` | Keeps prose as authored. Avoids a YAML/gray-matter dependency for four fields |
+| 2026-09-24 | Content files carry `status: published / partial / gap`. Gap files are never loaded for the site or agent | Unknown topics exist as explicit placeholders, so the gap report and the agent's "I don't know" come from one place |
+| 2026-09-24 | `KnowledgeSchema` checks cross-references (source ids, project slugs, duplicate ids) at module load | A typo fails the build instead of shipping an unsourced fact |
+| 2026-09-24 | Private names in the forbidden-content test are stored as SHA-256 hashes | The repo is public, so a plain-text denylist would leak the names it protects. The plain list is in the private ledger |
+| 2026-09-24 | Unknown or deeply personal questions answer "I don't have that information" and point to James's email | James's request. Never a guessed answer |
