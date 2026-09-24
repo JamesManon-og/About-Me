@@ -65,3 +65,9 @@ Each returns `{ data, sources }`. There are no write, fetch or exec tools, ever.
 | 2026-09-24 | Repo lives in `~/CODE/About-Me`, not `~/Documents` | iCloud sync broke git and builds before |
 | 2026-09-24 | Private research kept in gitignored `docs/private/` | The repo is public |
 | 2026-09-24 | No AI SDK RSC (`streamUI`) | Its development is paused. Use `useChat` tool parts |
+| 2026-09-24 | Markdown excluded from Prettier | Keeps hand-written docs as authored. Revisit for `content/` in Stage 2 |
+| 2026-09-24 | `bun run check` = format, lint, typecheck, unit tests, build. E2E runs separately | Fast gate without browsers. Playwright joins CI in Stage 11 |
+| 2026-09-24 | React Compiler off | Adds a Babel step with nothing to optimise yet. Revisit in Stage 8 |
+| 2026-09-24 | Env validated by importing `lib/env.ts` from `next.config.ts` | `dev` and `build` fail fast on bad values. Next loads `.env*` before the config |
+| 2026-09-24 | ESLint 9 (scaffold default), not 10 | `eslint-config-next` plugins not yet confirmed on 10 |
+| 2026-09-24 | `turbopack.root` and `outputFileTracingRoot` pinned to the repo | A lockfile in a parent folder was picked up as the workspace root |

@@ -28,3 +28,9 @@ docs/private/
 .DS_Store
 *.pem
 .vercel
+
+# logs
+*.log
+
+# playwright
+/playwright/.cache/
