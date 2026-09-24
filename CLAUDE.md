@@ -28,6 +28,7 @@ One stage or feature per chat session. Start with `/session-start`, end with
 
 ## Engineering standards
 - Next.js 16 App Router, React 19, TypeScript strict, Tailwind 4, `motion` only, AI SDK 7 (Node 22+), zod 4, bun.
+- Next 16 docs ship in `node_modules/next/dist/docs/` (see `AGENTS.md`). Read the relevant guide before using a Next API.
 - Server Components by default. Client components only for interaction.
 - Agent tools are read-only and return `{ data, sources }`. No tool writes, fetches arbitrary URLs or executes code.
 - Every visual effect respects `prefers-reduced-motion` and the device tier.
