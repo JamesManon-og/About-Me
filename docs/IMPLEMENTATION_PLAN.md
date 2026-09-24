@@ -12,7 +12,7 @@ deployment.
 |---|---|---|---|
 | 0 | Audit + research | none | done |
 | 1 | Foundation: scaffold + tooling + CI | none | `stage/01-foundation` |
-| 2 | Knowledge base | 1 (+ James's answers, partial OK) | `stage/02-knowledge` |
+| 2 | Knowledge base | 1 (+ James's answers, partial OK) | done |
 | 3 | Brand + design system | 1 | `stage/03-design-system` |
 | 3b | Mascot (angel) | direction + image model | `stage/03b-mascot` |
 | 4 | Static site: home + project pages + SEO basics | 2, 3 | `stage/04-static-site` |
@@ -76,6 +76,7 @@ Follow [MASCOT.md](MASCOT.md) using the `ip-as-logo` skill. **Done when:** the c
 ## Stage 5: Agent foundation
 **Goal:** streaming chat end to end, with no tools yet.
 - `app/api/chat/route.ts` (Node runtime) with `streamText`. `lib/agent/system-prompt.ts` sets the identity rules: third person, never "I am James", say unknown when unknown.
+- Unknown or deeply personal questions (every `known: false` FAQ and every `gap` topic) get one consistent reply: "I don't have that information. You can ask James directly at <email from `getContact`>." Never a guessed answer. (James's request, 2026-09-24.)
 - Chat panel: a side sheet on desktop, full-screen on mobile. Suggested prompt chips, a Stop button, error states.
 - Model: confirm current Claude model IDs and pricing with the `claude-api` skill. Pick the cheapest model that passes a 15-question smoke test.
 - James sets `ANTHROPIC_API_KEY` in `.env.local` himself.
