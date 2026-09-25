@@ -3,21 +3,21 @@ import { cx } from "@/lib/cx";
 
 type CardProps = HTMLAttributes<HTMLElement> & {
   as?: "div" | "article" | "li";
-  /** Sunken cards sit below the page, for asides and code-like content. */
-  tone?: "raised" | "sunken";
+  /** Filled cards use the surface grey, like the composer; outlined cards sit on the page. */
+  tone?: "outlined" | "filled";
 };
 
 export function Card({
   as: Tag = "div",
-  tone = "raised",
+  tone = "outlined",
   className,
   ...props
 }: CardProps) {
   return (
     <Tag
       className={cx(
-        "rounded-lg border border-line p-6",
-        tone === "raised" ? "bg-paper-raised shadow-paper" : "bg-paper-sunken",
+        "rounded-md p-5",
+        tone === "outlined" ? "border border-line bg-page" : "bg-surface",
         className,
       )}
       {...props}

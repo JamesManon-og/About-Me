@@ -41,16 +41,19 @@ export type ContrastPair = {
   use: string;
 };
 
-const SURFACES = ["paper", "paper-raised", "paper-sunken"] as const;
+/** Surfaces that carry text. */
+const TEXT_SURFACES = ["page", "surface", "surface-hover"] as const;
+/** Surfaces a bordered or focused control sits on. */
+const CONTROL_SURFACES = ["page", "surface"] as const;
 
 export const CONTRAST_PAIRS: ContrastPair[] = [
-  ...SURFACES.flatMap((bg) => [
-    { fg: "ink", bg, min: 4.5, use: "Body text" },
-    { fg: "ink-muted", bg, min: 4.5, use: "Secondary text" },
-    { fg: "accent", bg, min: 4.5, use: "Links and accent text" },
+  ...TEXT_SURFACES.flatMap((bg) => [
+    { fg: "fg", bg, min: 4.5, use: "Body text" },
+    { fg: "fg-muted", bg, min: 4.5, use: "Secondary text" },
+  ]),
+  ...CONTROL_SURFACES.flatMap((bg) => [
     { fg: "line-strong", bg, min: 3, use: "Control borders" },
     { fg: "focus", bg, min: 3, use: "Focus ring" },
   ]),
-  { fg: "paper", bg: "ink", min: 4.5, use: "Primary button text" },
-  { fg: "on-accent", bg: "accent", min: 4.5, use: "Text on accent fill" },
+  { fg: "page", bg: "fg", min: 4.5, use: "Send button and primary button" },
 ];

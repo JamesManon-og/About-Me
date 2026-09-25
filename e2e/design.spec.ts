@@ -35,9 +35,9 @@ test.describe("/design preview", () => {
           .first()
           .evaluate((el) => getComputedStyle(el).backgroundColor);
 
-      // --paper in globals.css: #f6f1e7 light, #141a26 dark
-      expect(await background("light")).toBe("rgb(246, 241, 231)");
-      expect(await background("dark")).toBe("rgb(20, 26, 38)");
+      // --page in globals.css: #ffffff light, #212121 dark
+      expect(await background("light")).toBe("rgb(255, 255, 255)");
+      expect(await background("dark")).toBe("rgb(33, 33, 33)");
     });
   }
 
@@ -61,8 +61,8 @@ test.describe("/design preview", () => {
       const style = getComputedStyle(el);
       return `${style.outlineStyle} ${style.outlineWidth} ${style.outlineColor}`;
     });
-    // --focus (terracotta) in the light theme
-    expect(outline).toBe("solid 2px rgb(168, 72, 42)");
+    // --focus (near-black) in the light theme
+    expect(outline).toBe("solid 2px rgb(13, 13, 13)");
   });
 
   for (const reducedMotion of ["reduce", "no-preference"] as const) {
@@ -71,15 +71,15 @@ test.describe("/design preview", () => {
     }) => {
       await page.emulateMedia({ reducedMotion });
       await page.goto("/design");
-      // The CSS minifier may rewrite units (0ms → 0s, 550ms → .55s).
+      // The CSS minifier may rewrite units (0ms → 0s, 250ms → .25s).
       const seconds = await page.evaluate(() => {
         const raw = getComputedStyle(document.documentElement)
-          .getPropertyValue("--duration-editorial")
+          .getPropertyValue("--duration-slow")
           .trim();
         const value = parseFloat(raw);
         return raw.endsWith("ms") ? value / 1000 : value;
       });
-      expect(seconds).toBe(reducedMotion === "reduce" ? 0 : 0.55);
+      expect(seconds).toBe(reducedMotion === "reduce" ? 0 : 0.25);
     });
   }
 });
