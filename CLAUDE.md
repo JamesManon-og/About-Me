@@ -1,9 +1,10 @@
 # CLAUDE.md: About-Me (James Manon-og AI portfolio)
 
 ## Purpose
-An interactive portfolio where visitors learn about James by browsing *or* by asking an AI
-assistant grounded in his real work. The site must be complete without the assistant; the
-assistant is a second door into the same content.
+A chatbot that answers questions about James, grounded in his real work. The chat is the
+product: the site opens on a single question and an input, like ChatGPT's empty state, and
+there are no portfolio pages (re-planned 2026-09-26). The look is close to ChatGPT:
+near-black, neutral sans, white and greys.
 
 ## How work happens here
 One stage or feature per chat session. Start with `/session-start`, end with

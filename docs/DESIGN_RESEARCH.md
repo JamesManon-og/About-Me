@@ -2,6 +2,11 @@
 
 Stage 0 research, September 2026. Principles are extracted from sources, not copied.
 
+**Re-planned 2026-09-26: chat-first.** James chose a chatbot as the product, with a look close
+to ChatGPT. §2.1 (two layers), §2.7 (static project pages), §4–5 (sketchbook visuals and
+type) and §8 (the long home page) no longer apply. The chat UX and accessibility guidance in
+§2–3, §6 and §7 still does. The current plan is in [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md).
+
 ## 1. Platform facts (checked against npm on 2026-09-24)
 
 | Package | Latest | Implication |
@@ -19,13 +24,13 @@ Stage 0 research, September 2026. Principles are extracted from sources, not cop
 
 ## 2. AI-native portfolio: patterns worth adopting
 
-1. **Two layers, one truth.** The static site is complete and crawlable without the agent. The agent is a second way into the *same* content. Seen in good 2026 examples; the weak ones replace the site with a chat box and lose SEO and skimmability.
+1. **Two layers, one truth.** *(Not adopted: chat-first re-plan, 2026-09-26.)* The static site is complete and crawlable without the agent. The agent is a second way into the *same* content. Seen in good 2026 examples; the weak ones replace the site with a chat box and lose SEO and skimmability.
 2. **Suggested prompts as invitations.** Show 4–6 topic chips ("James as an engineer", "Projects", "AI workflow", "How he handles messy code"). Clicking one sends a natural question. Rotate one "curious" prompt ("Tell me something unexpected").
 3. **Tool calls produce components, not paragraphs.** `getProject` returns a project story card, `getTimeline` a timeline, `getSkills` a grouped stack. Text answers stay short and frame the component.
 4. **Show provenance.** Every fact-bearing answer can show "Sources: Resume · MoneyApp README". This builds trust and makes hallucination visible.
 5. **Honest framing.** Use "An AI assistant that knows James's work", never "I am James". Answer in the third person, or as a clearly labelled assistant.
 6. **Follow-up chips** after each answer (2–3, derived from the tool used).
-7. **Deep links.** `/projects/moneyapp` as a static page, with the agent linking to it; `?ask=` pre-fills a question for sharing.
+7. **Deep links.** `/projects/moneyapp` as a static page, with the agent linking to it; `?ask=` pre-fills a question for sharing. *(Only `?ask=` is kept, in Stage 9.)*
 8. **Protection layers**, as seen in public write-ups of portfolio chatbots: rate limit, input length cap, grounded retrieval, an output filter for contact data, and a daily spend cap.
 
 ## 3. Patterns to avoid
@@ -80,7 +85,9 @@ body copy, and never for anything that must be read to operate the UI. Load font
 - Errors are human: "The assistant is resting (rate limit). Here's the static project page instead."
 - Mobile: the input is pinned above the keyboard (`interactive-widget=resizes-content`), with 44 px targets and no hover-only affordances.
 
-## 8. Information architecture (proposal)
+## 8. Information architecture (proposal, superseded)
+
+*Superseded 2026-09-26: the site is a single chat page. Kept for the record.*
 
 One long home page with anchored sections, plus static detail pages:
 

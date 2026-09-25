@@ -7,7 +7,7 @@ triggered by the instruction asking for an image-model API key, not by any code)
 
 ## What the skill does and doesn't do
 
-- It produces **static** square character images. Motion is added by the site (Stage 7): halo bob, blink, a lean toward the chat input while the agent is "thinking". Always respect `prefers-reduced-motion`.
+- It produces **static** square character images. Motion is added by the site (Stage 8): halo bob, blink, a lean toward the chat input while the agent is "thinking". Always respect `prefers-reduced-motion`.
 - It requires a top-tier image model: GPT Image 2 (preferred), Nano Banana Pro, or Nano Banana 2. **No SVG fallback** is allowed by the skill.
 - Its workflow is: propose three directions, get approval, then generate six candidates (two per direction, one emerging from each lower corner).
 
@@ -20,7 +20,7 @@ triggered by the instruction asking for an image-model API key, not by any code)
 | **C** | **Bot angel.** A soft rounded robot head with the halo as its antenna | white + warm yellow / muted cobalt bg | AI agent, builder | Chat avatar |
 
 Recommendation: A as the logo, C as the chat avatar, both with the **same two IP colours**
-so they read as one family. Final palette follows Stage 2 tokens.
+so they read as one family. The palette follows the Stage 4 chat tokens (near-black, white and greys), so the directions' colours will be revisited before generating.
 
 ## Where the mascot appears
 

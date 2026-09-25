@@ -179,6 +179,8 @@ export const FaqSchema = z.discriminatedUnion("known", [
     question: z.string().min(1),
     answer: z.string().min(1),
     sources: sourceList,
+    /** Answers linked to a project, for project cards and follow-ups. */
+    relatedProjects: z.array(slug).optional(),
   }),
   z.object({
     id: slug,
@@ -264,17 +266,28 @@ export const KnowledgeSchema = z
       }
     }
 
-    k.experience.forEach((e, i) =>
-      e.relatedProjects.forEach((s, j) => {
+    const checkProjects = (
+      list: string[] | undefined,
+      path: PropertyKey[],
+    ): void =>
+      list?.forEach((s, j) => {
         if (!slugs.has(s)) {
           ctx.addIssue({
             code: "custom",
-            path: ["experience", i, "relatedProjects", j],
+            path: [...path, j],
             message: `Unknown project "${s}"`,
           });
         }
-      }),
+      });
+
+    k.experience.forEach((e, i) =>
+      checkProjects(e.relatedProjects, ["experience", i, "relatedProjects"]),
     );
+    k.faq.forEach((f, i) => {
+      if (f.known) {
+        checkProjects(f.relatedProjects, ["faq", i, "relatedProjects"]);
+      }
+    });
   });
 
 /** Walks any value and yields every id found in a `sources` array. */
@@ -313,5 +326,6 @@ export type SkillGroup = z.infer<typeof SkillGroupSchema>;
 export type Certification = z.infer<typeof CertificationSchema>;
 export type Principle = z.infer<typeof PrincipleSchema>;
 export type Faq = z.infer<typeof FaqSchema>;
+export type KnownFaq = Extract<Faq, { known: true }>;
 export type ContentMeta = z.infer<typeof ContentMetaSchema>;
 export type Knowledge = z.infer<typeof KnowledgeSchema>;

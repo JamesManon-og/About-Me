@@ -1,9 +1,10 @@
 # About-Me
 
-An interactive portfolio for James Manon-og: browse the work, or ask an AI assistant that
-answers only from documented facts about his projects, experience and way of working.
+A chatbot that answers questions about James Manon-og: his projects, experience and way of
+working. It answers only from documented facts and says so when it doesn't know.
 
-Status: foundation in place (Stage 1). See [docs/PROGRESS.md](docs/PROGRESS.md).
+Status: knowledge base and design tokens in place; the chat is next (Stage 4). See
+[docs/PROGRESS.md](docs/PROGRESS.md).
 
 ## Development
 

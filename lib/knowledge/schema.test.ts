@@ -112,6 +112,16 @@ describe("KnowledgeSchema cross-references", () => {
     );
   });
 
+  it("rejects an unknown project on an FAQ", () => {
+    const broken = structuredClone(knowledge);
+    const entry = broken.faq.find((f) => f.known);
+    if (!entry?.known) throw new Error("expected a known FAQ");
+    entry.relatedProjects = ["no-such-faq-project"];
+    expect(issueMessages(broken)).toContain(
+      'Unknown project "no-such-faq-project"',
+    );
+  });
+
   it("rejects duplicate ids", () => {
     const broken = structuredClone(knowledge);
     broken.projects.push(structuredClone(broken.projects[0]!));

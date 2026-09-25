@@ -1,7 +1,7 @@
 import type { Link } from "@/lib/knowledge/schema";
 
 /**
- * Every outbound link the site or the agent may render. Stage 10 uses this
+ * Every outbound link the site or the agent may render. Stage 7 uses this
  * list as the markdown link allowlist, so a URL missing here is not clickable.
  */
 export const links = [

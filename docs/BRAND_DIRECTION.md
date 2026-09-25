@@ -5,7 +5,12 @@ in `components/ui/`, and the preview at `/design` (not indexed). This document r
 why they look the way they do. Background research is in
 [DESIGN_RESEARCH.md](DESIGN_RESEARCH.md) §4–6.
 
-**Status:** approved by James on 2026-09-26, with terracotta as the accent. The handwriting is
+**Superseded for the chat (2026-09-26).** After the chat-first re-plan James chose a look close
+to ChatGPT: near-black, neutral sans, white and greys. Stage 4 replaces the palette and the
+serif and handwritten faces, and will rewrite this document. The mechanics in §6 and §8 (one
+focus style, `light-dark()` tokens re-declared per `[data-theme]`) carry over.
+
+**Status (Stage 3):** approved by James on 2026-09-26, with terracotta as the accent. The handwriting is
 still Caveat until his own phrases are vectorised (§3).
 
 ## 1. Direction: sketchbook meets engineering lab
