@@ -76,3 +76,9 @@ Each returns `{ data, sources }`. There are no write, fetch or exec tools, ever.
 | 2026-09-24 | `KnowledgeSchema` checks cross-references (source ids, project slugs, duplicate ids) at module load | A typo fails the build instead of shipping an unsourced fact |
 | 2026-09-24 | Private names in the forbidden-content test are stored as SHA-256 hashes | The repo is public, so a plain-text denylist would leak the names it protects. The plain list is in the private ledger |
 | 2026-09-24 | Unknown or deeply personal questions answer "I don't have that information" and point to James's email | James's request. Never a guessed answer |
+| 2026-09-25 | Colour tokens declared once with `light-dark()`, re-declared on every `[data-theme]` element | One definition per token. Tailwind's Lightning CSS polyfill resolves `light-dark()` where a token is declared, so forced-theme subtrees need their own declaration |
+| 2026-09-25 | `app/globals.css` is the only source for colour values. `lib/design/tokens.ts` parses it for the contrast test and `/design` | No duplicate token table in TypeScript that could drift |
+| 2026-09-25 | Primitives are dependency-free Server Components with a small `cx` helper (no `clsx`, `tailwind-merge` or shadcn) | Few variants. Class overrides are not supported by design |
+| 2026-09-25 | Handwriting renders in Caveat behind `Handwritten` until James's phrases are vectorised | Swapping in the SVGs changes one component, no call sites |
+| 2026-09-25 | `.claude/launch.json` defines the `dev` server for the desktop app's preview pane | Used for visual checks. Not needed for the build |
+| 2026-09-26 | Accent is terracotta (`#a8482a` / `#e8906c`). Ochre and slate candidates removed | James approved the default after comparing all three on `/design` |

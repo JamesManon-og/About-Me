@@ -7,17 +7,17 @@ hand-off between sessions.
 
 | | |
 |---|---|
-| Current stage | **Stage 3: Brand + design system** (next) |
-| Last completed | Stage 2: Knowledge base |
-| Blocked on James | Stage 3 needs 5–10 handwritten phrases (or accept the Caveat fallback) and his approval of the direction. Stage 3b needs a mascot direction + image model. Remaining knowledge gaps: `bun run knowledge:gaps` |
-| Known issues | None. Stage 1 CI passed on the PR and on `main` |
+| Current stage | **Stage 4: Static site** (next) |
+| Last completed | Stage 3: Brand + design system |
+| Blocked on James | Stage 3b needs a mascot direction + image model. Handwriting: 5–10 phrases whenever ready (Caveat stands in). Remaining knowledge gaps: `bun run knowledge:gaps` |
+| Known issues | None. Stage 2 CI passed on the PR and on `main` |
 
 ## Stage checklist
 
 - [x] 0 Audit + research
 - [x] 1 Foundation
 - [x] 2 Knowledge base
-- [ ] 3 Brand + design system
+- [x] 3 Brand + design system
 - [ ] 3b Mascot
 - [ ] 4 Static site
 - [ ] 5 Agent foundation
@@ -33,6 +33,26 @@ hand-off between sessions.
 - [ ] 15 Final QA
 
 ## Log
+
+### 2026-09-26: Stage 3: Brand + design system
+- **Done:**
+  - `app/globals.css`: colour tokens (paper, ink, lines, grid, terracotta accent, focus, shadow tint) declared once with `light-dark()`. The OS picks the theme; `data-theme` forces it for a subtree. Fluid type scale, radius, shadows, easings, reading/page containers, and motion durations that drop to 0 under reduced motion or `data-motion="reduce"`. One global `:focus-visible` ring.
+  - `app/layout.tsx`: Instrument Serif, Instrument Sans and Caveat (handwriting stand-in) via `next/font/google`.
+  - `components/ui/`: `Button`, `ButtonLink`, `Chip`, `TextLink`, `Section`, `Card`, `Handwritten`, and `Underline` / `Circled` / `Arrow` marks. Server Components with no client JS and no new dependencies. Buttons and chips are 44 px tall.
+  - `/design` (noindex): every token and primitive in light and dark side by side, with the contrast ratios read from the CSS.
+  - `lib/design/contrast.ts` + `tokens.ts`: WCAG contrast math and a parser that reads the tokens from `globals.css`, so the CSS is the only source. The contrast test covers every text, border and focus pair in both themes (checked that it fails when a token is made too light).
+  - `e2e/design.spec.ts`: no console errors, noindex, forced themes under both OS preferences, focus ring on keyboard focus, reduced-motion durations.
+  - `docs/BRAND_DIRECTION.md`: palette, type, annotation, spacing, focus, motion and theming rationale.
+- **Checks:** `bun run check` green, 105 tests. `bun run test:e2e` 13 passed, 1 skipped (WebKit's Tab key skips buttons, as Safari does; Chromium covers it). Visual pass in the browser pane at desktop and 375 px, both themes, no horizontal scroll.
+- **Decisions:** see the ARCHITECTURE.md decisions log (`light-dark()` re-declared per `[data-theme]`, CSS as the single token source, dependency-free primitives, Caveat behind `Handwritten`, terracotta accent). James approved the direction with the defaults: terracotta over ochre and slate, Instrument Sans, Caveat until his handwriting is ready.
+- **Left:**
+  - James's handwriting: 5–10 phrases to vectorise into `Handwritten`. Not blocking.
+  - Annotation draw-on animation and the in-site reduced-motion toggle are Stage 8 (paths already use `pathLength={1}`; the `data-motion` hook exists).
+- **Issues found:**
+  - Tailwind's Lightning CSS compiles `light-dark()` into a variable polyfill that resolves where a token is declared, so a forced-theme panel inherited the OS theme. Fixed by re-declaring tokens on `[data-theme]`; covered by e2e. Details in BRAND_DIRECTION.md §8.
+  - The Stage 2 phone-number scan flagged SVG path data. `findPhoneNumbers` now skips `d`, `viewBox` and `points` attributes, with tests.
+  - Added `.claude/launch.json` (dev server for the desktop app's preview pane). Optional to keep.
+- **Next:** Stage 4 (static site), which needs Stages 2 and 3, both done. Stage 3b (mascot) can run whenever James picks a direction and image model.
 
 ### 2026-09-24: Stage 2: Knowledge base
 - **Done:**
