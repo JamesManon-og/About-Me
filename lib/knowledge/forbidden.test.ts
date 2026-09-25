@@ -74,6 +74,8 @@ describe("forbidden-content helpers", () => {
     "645,000+ educators",
     "93 to 315 tests",
     "a6c085a1b85dd7e11a12b57341e821e7e57ffa3f54273442dc931a825df49980",
+    '<path d="M3 8.5C42 4.2 92 3.4 132 5.4 160 6.8 184 8 197 5" />',
+    '<svg viewBox="0 0 200 80 120 40">',
   ])("ignores %s", (text) => {
     expect(findPhoneNumbers(text)).toEqual([]);
   });
