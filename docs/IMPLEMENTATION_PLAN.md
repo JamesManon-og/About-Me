@@ -13,7 +13,7 @@ deployment.
 | 0 | Audit + research | none | done |
 | 1 | Foundation: scaffold + tooling + CI | none | `stage/01-foundation` |
 | 2 | Knowledge base | 1 (+ James's answers, partial OK) | done |
-| 3 | Brand + design system | 1 | `stage/03-design-system` |
+| 3 | Brand + design system | 1 | done |
 | 3b | Mascot (angel) | direction + image model | `stage/03b-mascot` |
 | 4 | Static site: home + project pages + SEO basics | 2, 3 | `stage/04-static-site` |
 | 5 | Agent foundation (streaming chat) | 4 | `stage/05-agent` |

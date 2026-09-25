@@ -49,14 +49,19 @@ export function findDenylistedTerms(
     .filter((hash) => denylist.has(hash));
 }
 
+/** SVG geometry attributes (path data, viewBox, points): coordinates, not text. */
+const SVG_GEOMETRY = /\b(?:d|viewBox|points)=(?:"[^"]*"|'[^']*')/g;
+
 /**
  * Anything shaped like a phone number: 10 or more digits, optionally with a
  * leading +, spaces, dots, dashes or parentheses between them. Digits inside
- * a longer word, such as a hash, don't count.
+ * a longer word, such as a hash, don't count, and neither does SVG geometry.
  */
 export function findPhoneNumbers(text: string): string[] {
   const candidates =
-    text.match(/(?<![\w+])\+?\(?\d[\d\s().-]{8,}\d(?!\w)/g) ?? [];
+    text
+      .replace(SVG_GEOMETRY, "")
+      .match(/(?<![\w+])\+?\(?\d[\d\s().-]{8,}\d(?!\w)/g) ?? [];
   return candidates.filter((match) => match.replace(/\D/g, "").length >= 10);
 }
 
