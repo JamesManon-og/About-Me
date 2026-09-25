@@ -7,6 +7,10 @@ const nextConfig: NextConfig = {
   // Pin the project root so a stray lockfile in a parent folder is never picked up.
   turbopack: { root: __dirname },
   outputFileTracingRoot: __dirname,
+  // The chat route reads content/james/*.md from disk at runtime, which tracing can't see.
+  outputFileTracingIncludes: {
+    "/api/chat": ["./content/james/**/*.md"],
+  },
 };
 
 export default nextConfig;

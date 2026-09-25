@@ -36,4 +36,24 @@ describe("parseEnv", () => {
   it("rejects an unknown NODE_ENV", () => {
     expect(() => parseEnv({ NODE_ENV: "staging" })).toThrow(/NODE_ENV/);
   });
+
+  it("accepts only the listed chat models", () => {
+    expect(parseEnv({ CHAT_MODEL: "claude-sonnet-5" }).CHAT_MODEL).toBe(
+      "claude-sonnet-5",
+    );
+    expect(() => parseEnv({ CHAT_MODEL: "gpt-4" })).toThrow(/CHAT_MODEL/);
+  });
+
+  it("allows the mock model locally and on previews", () => {
+    expect(parseEnv({ CHAT_MODEL_MOCK: "1" }).CHAT_MODEL_MOCK).toBe("1");
+    expect(
+      parseEnv({ CHAT_MODEL_MOCK: "1", VERCEL_ENV: "preview" }).CHAT_MODEL_MOCK,
+    ).toBe("1");
+  });
+
+  it("refuses the mock model on a production deployment", () => {
+    expect(() =>
+      parseEnv({ CHAT_MODEL_MOCK: "1", VERCEL_ENV: "production" }),
+    ).toThrow(/CHAT_MODEL_MOCK/);
+  });
 });

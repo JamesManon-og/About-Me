@@ -15,14 +15,20 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "knowledge:gaps": "bun scripts/knowledge-gaps.ts",
+    "scan:static": "bun scripts/scan-static.ts",
+    "smoke:chat": "bun scripts/smoke-chat.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "check": "bun run format:check && bun run lint && bun run typecheck && bun run test && bun run build"
+    "check": "bun run format:check && bun run lint && bun run typecheck && bun run test && bun run build && bun run scan:static"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^4.0.63",
+    "@ai-sdk/react": "^4.0.117",
+    "ai": "^7.0.114",
     "next": "16.3.6",
     "react": "19.2.8",
     "react-dom": "19.2.8",
+    "react-markdown": "^10.1.0",
     "zod": "^4.6.5"
   },
   "devDependencies": {
