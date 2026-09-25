@@ -15,7 +15,7 @@ const classes =
 
 /**
  * Inline link. Internal paths use next/link. External URLs render a plain anchor with a
- * small arrow; they open in the same tab. Stage 10 limits external links to the allowlist.
+ * small arrow; they open in the same tab. Stage 7 limits external links to the allowlist.
  */
 export function TextLink({
   href,

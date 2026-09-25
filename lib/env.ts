@@ -16,9 +16,9 @@ export const serverSchema = z.object({
   NODE_ENV: z
     .enum(["development", "test", "production"])
     .default("development"),
-  // Stage 5: ANTHROPIC_API_KEY: z.string().min(1),
-  // Stage 10: UPSTASH_REDIS_REST_URL: z.url(),
-  // Stage 10: UPSTASH_REDIS_REST_TOKEN: z.string().min(1),
+  // Stage 4: ANTHROPIC_API_KEY: z.string().min(1),
+  // Stage 7: UPSTASH_REDIS_REST_URL: z.url(),
+  // Stage 7: UPSTASH_REDIS_REST_TOKEN: z.string().min(1),
 });
 
 export const publicSchema = z.object({

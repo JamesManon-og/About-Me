@@ -7,32 +7,71 @@ hand-off between sessions.
 
 | | |
 |---|---|
-| Current stage | **Stage 4: Static site** (next) |
-| Last completed | Stage 3: Brand + design system |
-| Blocked on James | Stage 3b needs a mascot direction + image model. Handwriting: 5–10 phrases whenever ready (Caveat stands in). Remaining knowledge gaps: `bun run knowledge:gaps` |
-| Known issues | None. Stage 2 CI passed on the PR and on `main` |
+| Current stage | **Stage 4: Chat MVP** (next) |
+| Last completed | Re-plan to chat-first (2026-09-26). Stage 3 before that |
+| Blocked on James | `ANTHROPIC_API_KEY` in `.env.local` before Stage 4 can be tested. Knowledge gaps: `bun run knowledge:gaps` (Track C). Stage 3b needs a mascot direction + image model (optional) |
+| Known issues | None |
 
 ## Stage checklist
+
+Re-planned 2026-09-26. Old stages 4–15 were replaced; see IMPLEMENTATION_PLAN.md.
 
 - [x] 0 Audit + research
 - [x] 1 Foundation
 - [x] 2 Knowledge base
-- [x] 3 Brand + design system
-- [ ] 3b Mascot
-- [ ] 4 Static site
-- [ ] 5 Agent foundation
-- [ ] 6 Knowledge tools + eval v1
-- [ ] 7 Generative UI
-- [ ] 8 Motion + interaction
-- [ ] 9 Accessibility + responsive
-- [ ] 10 Security + abuse protection
-- [ ] 11 Testing + AI evaluation
-- [ ] 12 SEO + metadata
-- [ ] 13 Production hardening
-- [ ] 14 Vercel deployment
-- [ ] 15 Final QA
+- [x] 3 Brand + design system (palette replaced in Stage 4)
+- [ ] 3b Mascot (optional)
+- [ ] 4 Chat MVP
+- [ ] 5 Evals v1
+- [ ] 6 Rich answers
+- [ ] 7 Security + abuse protection
+- [ ] 8 Polish: motion, accessibility, responsive
+- [ ] 9 SEO + sharing
+- [ ] 10 Hardening, deployment, final QA
+- [ ] C Content: knowledge gaps (ongoing)
 
 ## Log
+
+### 2026-09-26: Re-plan: chat-first
+- **Why:** partway through the first Stage 4 (static portfolio site), James decided the
+  product should be a chatbot that answers everything about him, not a portfolio site. His
+  reference is ChatGPT's empty state: one question, one input, a suggestion.
+- **Decisions (James):** the chat is the whole site; the look is close to ChatGPT
+  (near-black, neutral sans, white and greys), replacing the Stage 3 palette and fonts; the
+  assistant still speaks about James in the third person; this session re-plans, and the
+  chat is built in the next one.
+- **Done:**
+  - Removed the uncommitted static site: home sections, `/projects/[slug]` pages, site
+    header and footer, 404 page, `ChipLink`, `TagList`, and `e2e/site.spec.ts`. The layout,
+    home placeholder, `/design` and `globals.css` are back to their Stage 3 state.
+  - Kept, for Stage 6 answer cards and tools: `lib/knowledge/queries.ts` (`getProject`,
+    `projectNeighbours`, `faqForProject`, `sourcesCitedIn`, `linksOfKind`),
+    `lib/knowledge/format.ts` (partial-date ranges, collaboration and status labels), and an
+    optional, cross-checked `relatedProjects` on known FAQs (MoneyApp payments, thesis team,
+    thesis framework). All with tests.
+  - Rewrote IMPLEMENTATION_PLAN.md (stages 4–10 plus Track C) and updated CLAUDE.md,
+    ARCHITECTURE.md (shape, full-context grounding, tools only for rich answers, decisions
+    log), README, BACKLOG, MASCOT, and superseded notes in DESIGN_RESEARCH and
+    BRAND_DIRECTION.
+  - `.claude/launch.json` gained a `prod` configuration (`next start` on port 3100) for
+    Lighthouse and production checks.
+- **Checks:** `bun run check` green, 128 unit tests (23 new for the kept helpers and the FAQ
+  cross-check). `bun run test:e2e` 13 passed, 1 skipped (WebKit Tab, as in Stage 3). The build
+  lists `/`, `/_not-found` and `/design` only.
+- **Left:** everything from Stage 4 on. The Stage 3 home placeholder and `/design` stay until
+  Stage 4 replaces them.
+- **Issues found:**
+  - Mobile Lighthouse ran fine with `bunx lighthouse` against the installed Chrome and the
+    production server (no dependency added). The static home scored 94 performance, 100
+    accessibility, best practices and SEO. LCP was the hero paragraph, and 85% of it was
+    render delay behind four preloaded font files (about 111 KB). The ChatGPT-like system
+    sans avoids that cost entirely.
+  - With `dynamicParams = false`, `next start` 16.3.6 logs `Error: Internal:
+    NoFallbackError` for unknown slugs while still returning a correct 404. Nothing uses
+    dynamic segments now; re-check after upgrading to 16.3.7.
+  - After deleting a route, stale types in `.next/dev/types` (written by `next dev`) broke
+    `tsc`. Deleting `.next/dev` fixed it.
+- **Next:** Stage 4 (chat MVP). James adds `ANTHROPIC_API_KEY` to `.env.local` first.
 
 ### 2026-09-26: Stage 3: Brand + design system
 - **Done:**
