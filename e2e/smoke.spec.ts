@@ -15,3 +15,11 @@ test("home page renders without console errors", async ({ page }) => {
   await expect(page.locator("html")).toHaveAttribute("lang", "en");
   expect(errors).toEqual([]);
 });
+
+test("the heading and description are in the server HTML", async ({
+  request,
+}) => {
+  const html = await (await request.get("/")).text();
+  expect(html).toContain("What do you want to know about James?");
+  expect(html).toMatch(/<meta name="description" content="[^"]+"/);
+});

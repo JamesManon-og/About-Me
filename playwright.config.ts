@@ -18,10 +18,12 @@ export default defineConfig({
     { name: "desktop-chromium", use: { ...devices["Desktop Chrome"] } },
     { name: "mobile-webkit", use: { ...devices["iPhone 15"] } },
   ],
-  // E2E runs against a production build, not the dev server.
+  // E2E runs against a production build, not the dev server. The chat uses the scripted
+  // mock model, so no API key is needed and answers are deterministic.
   webServer: {
     command: `bun run build && bun run start --port ${PORT}`,
     url: baseURL,
+    env: { CHAT_MODEL_MOCK: "1" },
     reuseExistingServer: !process.env.CI,
     timeout: 180_000,
   },

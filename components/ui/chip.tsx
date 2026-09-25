@@ -19,9 +19,9 @@ export function Chip({
       aria-pressed={selected}
       className={cx(
         "inline-flex min-h-11 items-center gap-2 rounded-full border border-line-strong",
-        "bg-paper-raised px-4 text-small text-ink",
+        "bg-page px-4 text-small text-fg",
         "transition-[background-color,border-color,color] duration-(--duration-fast) ease-out",
-        "hover:border-ink aria-pressed:border-accent aria-pressed:bg-accent aria-pressed:text-on-accent",
+        "hover:bg-surface aria-pressed:border-fg aria-pressed:bg-fg aria-pressed:text-page",
         "disabled:cursor-not-allowed disabled:opacity-55",
         className,
       )}

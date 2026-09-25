@@ -50,7 +50,7 @@ describe("parseColorTokens", () => {
 describe("globals.css colour tokens", () => {
   it("declares every token as a 6-digit hex pair", () => {
     const all = Object.values(tokens);
-    expect(all.length).toBeGreaterThan(10);
+    expect(all.length).toBeGreaterThanOrEqual(8);
     for (const { light, dark } of all) {
       expect(isHex(light), light).toBe(true);
       expect(isHex(dark), dark).toBe(true);

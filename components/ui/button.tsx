@@ -5,15 +5,14 @@ import { cx } from "@/lib/cx";
 export type ButtonVariant = "primary" | "secondary" | "ghost";
 
 const base =
-  "inline-flex min-h-11 items-center justify-center gap-2 rounded-md px-5 text-ui font-medium " +
+  "inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-5 text-small font-medium " +
   "transition-[background-color,border-color,color] duration-(--duration-fast) ease-out " +
   "disabled:cursor-not-allowed disabled:opacity-55";
 
 const variants: Record<ButtonVariant, string> = {
-  primary: "bg-ink text-paper hover:bg-ink/85",
-  secondary:
-    "border border-line-strong bg-paper-raised text-ink hover:bg-paper-sunken",
-  ghost: "text-ink hover:bg-paper-sunken",
+  primary: "bg-fg text-page hover:bg-fg/85",
+  secondary: "border border-line-strong bg-page text-fg hover:bg-surface",
+  ghost: "text-fg hover:bg-surface",
 };
 
 export function buttonClasses(

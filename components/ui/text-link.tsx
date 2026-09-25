@@ -9,9 +9,9 @@ type TextLinkProps = Omit<ComponentProps<typeof Link>, "href"> & {
 const EXTERNAL = /^https?:\/\//;
 
 const classes =
-  "text-accent underline decoration-accent/45 decoration-1 underline-offset-[0.2em] " +
+  "text-fg underline decoration-fg/40 decoration-1 underline-offset-[0.2em] " +
   "transition-[text-decoration-color] duration-(--duration-fast) ease-out " +
-  "hover:decoration-accent hover:decoration-2";
+  "hover:decoration-fg hover:decoration-2";
 
 /**
  * Inline link. Internal paths use next/link. External URLs render a plain anchor with a

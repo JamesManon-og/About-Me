@@ -35,7 +35,7 @@ jobs:
         uses: actions/cache@v6
         with:
           path: .next/cache
-          key: nextjs-${{ runner.os }}-${{ hashFiles('bun.lock') }}-${{ hashFiles('app/**', 'lib/**', '*.config.*') }}
+          key: nextjs-${{ runner.os }}-${{ hashFiles('bun.lock') }}-${{ hashFiles('app/**', 'components/**', 'lib/**', '*.config.*') }}
           restore-keys: |
             nextjs-${{ runner.os }}-${{ hashFiles('bun.lock') }}-
 
@@ -53,3 +53,6 @@ jobs:
 
       - name: Build
         run: bun run build
+
+      - name: No secrets in client files
+        run: bun run scan:static

@@ -19,6 +19,7 @@ Status: `idea` → `ready` (brief written) → `in progress` → `done`.
 | `conversation-export`: download the chat as markdown | Recruiters keep notes | Stage 6 | idea |
 | `analytics-lite`: privacy-friendly counts of which prompts get asked | Learn what visitors want | Stage 10 | idea |
 | `voice-mode`: ask by voice (AI SDK 7 speech), the mic button in the input | Novel. Only if it earns its place | Stage 10 | idea |
+| `conversation-persistence`: keep the chat across a reload (sessionStorage) | A reload or back navigation currently loses the conversation | Stage 8 | idea |
 | `profile-pages`: static, crawlable pages (about, projects) if search traffic turns out to matter | SEO beyond one chat page. Built once in the first Stage 4 attempt and removed | Stage 9 | idea |
 
 Add ideas freely. Keep the "Why" to one line; if you can't write it, the feature probably

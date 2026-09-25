@@ -1,15 +1,16 @@
 @import "tailwindcss";
 
 /*
- * Brand tokens. Rationale lives in docs/BRAND_DIRECTION.md.
+ * Design tokens. Rationale lives in docs/BRAND_DIRECTION.md.
  *
- * Colour tokens use light-dark(), so each one is declared once. The OS preference picks
- * the theme; data-theme="light|dark" on any element forces it for that subtree.
+ * The look is close to ChatGPT: near-black by default, white by day, greys in between,
+ * and no accent colour. The OS preference picks the theme; data-theme="light|dark" on any
+ * element forces it for that subtree.
  *
  * Tailwind compiles light-dark() into a variable polyfill that resolves where a token is
  * declared, not where it is used. So the tokens are re-declared on every [data-theme]
- * element. Hand-written
- * CSS below uses these raw variables, not Tailwind's --color-* copies, for the same reason.
+ * element. Hand-written CSS below uses these raw variables, not Tailwind's --color-*
+ * copies, for the same reason.
  *
  * lib/design/tokens.ts parses the light-dark() declarations, and the contrast test checks
  * every text/surface pair. Keep them as 6-digit hex.
@@ -28,33 +29,26 @@
 
 :root,
 [data-theme] {
-  /* Surfaces: warm paper by day, ink paper by night */
-  --paper: light-dark(#f6f1e7, #141a26);
-  --paper-raised: light-dark(#fcfaf5, #1c2332);
-  --paper-sunken: light-dark(#ece5d6, #0f141d);
+  /* Surfaces: the page, filled controls (composer, user bubble), and their hover */
+  --page: light-dark(#ffffff, #212121);
+  --surface: light-dark(#f4f4f4, #303030);
+  --surface-hover: light-dark(#e9e9e9, #3c3c3c);
 
-  /* Text: near-black navy ink, chalk on dark */
-  --ink: light-dark(#1b2233, #ede6d6);
-  --ink-muted: light-dark(#4f5566, #aaa395);
+  /* Text */
+  --fg: light-dark(#0d0d0d, #ececec);
+  --fg-muted: light-dark(#5d5d5d, #b4b4b4);
 
-  /* Lines: decorative rules, control borders (3:1), engineering-paper grid */
-  --line: light-dark(#ddd4c3, #2c3446);
-  --line-strong: light-dark(#8a8272, #7a766e);
-  --grid: light-dark(#e9e2d3, #1a2130);
+  /* Lines: decorative rules, and control borders (3:1) */
+  --line: light-dark(#e5e5e5, #383838);
+  --line-strong: light-dark(#858585, #7d7d7d);
 
-  /* Accent: terracotta, shared with the mascot */
-  --accent: light-dark(#a8482a, #e8906c);
-  --on-accent: light-dark(#fcfaf5, #141a26);
-  --focus: light-dark(#a8482a, #e8906c);
-
-  --shadow-tint: light-dark(#5b4a2e, #000000);
+  --focus: light-dark(#0d0d0d, #ececec);
 }
 
 :root {
   --duration-fast: 150ms;
   --duration-base: 200ms;
   --duration-slow: 250ms;
-  --duration-editorial: 550ms;
 }
 
 /* Reduced motion: final states only. data-motion="reduce" is the Stage 8 site toggle */
@@ -63,7 +57,6 @@
     --duration-fast: 0ms;
     --duration-base: 0ms;
     --duration-slow: 0ms;
-    --duration-editorial: 0ms;
   }
 }
 
@@ -71,72 +64,54 @@
   --duration-fast: 0ms;
   --duration-base: 0ms;
   --duration-slow: 0ms;
-  --duration-editorial: 0ms;
 }
 
 @theme inline {
-  --color-paper: var(--paper);
-  --color-paper-raised: var(--paper-raised);
-  --color-paper-sunken: var(--paper-sunken);
-  --color-ink: var(--ink);
-  --color-ink-muted: var(--ink-muted);
+  --color-page: var(--page);
+  --color-surface: var(--surface);
+  --color-surface-hover: var(--surface-hover);
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
   --color-line: var(--line);
   --color-line-strong: var(--line-strong);
-  --color-grid: var(--grid);
-  --color-accent: var(--accent);
-  --color-on-accent: var(--on-accent);
   --color-focus: var(--focus);
 
-  --font-serif: var(--font-instrument-serif), ui-serif, Georgia, serif;
+  /* System faces only: no font files to download before the first paint */
   --font-sans:
-    var(--font-instrument-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-hand: var(--font-caveat), "Segoe Print", "Bradley Hand", cursive;
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
   --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-
-  --shadow-paper:
-    0 1px 0 color-mix(in srgb, var(--shadow-tint) 8%, transparent),
-    0 10px 24px -14px color-mix(in srgb, var(--shadow-tint) 35%, transparent);
-  --shadow-lifted:
-    0 1px 0 color-mix(in srgb, var(--shadow-tint) 10%, transparent),
-    0 18px 36px -18px color-mix(in srgb, var(--shadow-tint) 45%, transparent);
 }
 
 @theme {
-  /* Fluid type scale. Serif for display and headings, sans for everything else */
-  --text-display: clamp(2.75rem, 1.9rem + 3.6vw, 5rem);
-  --text-display--line-height: 1.02;
-  --text-display--letter-spacing: -0.02em;
-  --text-h1: clamp(2.25rem, 1.8rem + 1.9vw, 3.25rem);
-  --text-h1--line-height: 1.08;
-  --text-h2: clamp(1.75rem, 1.5rem + 1.1vw, 2.375rem);
-  --text-h2--line-height: 1.15;
-  --text-h3: 1.375rem;
-  --text-h3--line-height: 1.3;
-  --text-body: 1.0625rem;
-  --text-body--line-height: 1.65;
-  --text-ui: 0.9375rem;
-  --text-ui--line-height: 1.25;
+  --text-title: clamp(1.5rem, 1.2rem + 1.2vw, 2rem);
+  --text-title--line-height: 1.2;
+  --text-title--letter-spacing: -0.01em;
+  --text-h2: 1.25rem;
+  --text-h2--line-height: 1.3;
+  --text-body: 1rem;
+  --text-body--line-height: 1.6;
   --text-small: 0.875rem;
-  --text-small--line-height: 1.5;
-  --text-eyebrow: 0.75rem;
-  --text-eyebrow--line-height: 1.4;
-  --text-eyebrow--letter-spacing: 0.14em;
+  --text-small--line-height: 1.45;
+  --text-caption: 0.75rem;
+  --text-caption--line-height: 1.4;
 
-  --radius-sm: 0.25rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 0.875rem;
+  --radius-sm: 0.375rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1.5rem;
 
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
 
-  --container-reading: 40rem;
+  /* The conversation column */
+  --container-chat: 48rem;
   --container-page: 72rem;
 }
 
 @layer base {
   body {
-    background-color: var(--paper);
-    color: var(--ink);
+    background-color: var(--page);
+    color: var(--fg);
     font-family: var(--font-sans);
     font-size: var(--text-body);
     line-height: var(--text-body--line-height);
@@ -149,14 +124,70 @@
   }
 
   ::selection {
-    background-color: color-mix(in srgb, var(--accent) 22%, transparent);
+    background-color: color-mix(in srgb, var(--fg) 20%, transparent);
   }
 }
 
-@utility bg-grid-paper {
-  background-color: var(--paper);
-  background-image:
-    linear-gradient(var(--grid) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
-  background-size: 24px 24px;
+/* Answers rendered from Markdown by components/chat/markdown.tsx */
+@layer components {
+  .chat-markdown > * + * {
+    margin-top: 0.75em;
+  }
+
+  .chat-markdown ul,
+  .chat-markdown ol {
+    padding-left: 1.25rem;
+  }
+
+  .chat-markdown ul {
+    list-style: disc;
+  }
+
+  .chat-markdown ol {
+    list-style: decimal;
+  }
+
+  .chat-markdown li + li {
+    margin-top: 0.25em;
+  }
+
+  .chat-markdown strong {
+    font-weight: 600;
+  }
+
+  .chat-markdown a {
+    text-decoration: underline;
+    text-decoration-color: color-mix(in srgb, var(--fg) 40%, transparent);
+    text-underline-offset: 0.2em;
+  }
+
+  .chat-markdown a:hover {
+    text-decoration-color: var(--fg);
+  }
+
+  .chat-markdown code {
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+    background-color: var(--surface);
+    border-radius: var(--radius-sm);
+    padding: 0.1em 0.3em;
+  }
+
+  .chat-markdown pre {
+    overflow-x: auto;
+    background-color: var(--surface);
+    border-radius: var(--radius-md);
+    padding: 0.75rem 1rem;
+  }
+
+  .chat-markdown pre code {
+    background: none;
+    padding: 0;
+  }
+
+  .chat-markdown blockquote {
+    border-left: 2px solid var(--line-strong);
+    padding-left: 0.75rem;
+    color: var(--fg-muted);
+  }
 }
