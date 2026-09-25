@@ -35,6 +35,7 @@ export const faq = [
     answer:
       "No. It tracks settlements made through GCash or cash. Proof is attached, the payee has to verify each settlement, and unverified ones stay pending.",
     sources: ["moneyapp-readme"],
+    relatedProjects: ["moneyapp"],
   },
   {
     id: "thesis-team",
@@ -43,6 +44,7 @@ export const faq = [
     answer:
       "No. It was a three-person group thesis on traffic signal control with deep reinforcement learning. James's role was Researcher & Developer.",
     sources: ["thesis-writeup", "confirmed-by-james"],
+    relatedProjects: ["traffic-signal-rl"],
   },
   {
     id: "education",
@@ -75,6 +77,7 @@ export const faq = [
     answer:
       "James says the thesis model work used PyTorch. The agent code in the public repository imports TensorFlow, so a visitor reading the repo will see TensorFlow there.",
     sources: ["confirmed-by-james", "thesis-repo"],
+    relatedProjects: ["traffic-signal-rl"],
   },
   {
     id: "favourite-language",
