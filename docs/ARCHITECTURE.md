@@ -31,7 +31,7 @@ Next.js 16 on Vercel ───────────────────�
 | Styling | Tailwind CSS 4 (`@theme` tokens in CSS) | Tokens as CSS variables, which makes theming easy |
 | Motion | `motion` only | One library. No GSAP or Lenis unless a stage justifies it |
 | AI | AI SDK 7 (`ai`, `@ai-sdk/react`) + Claude provider | Typed tools, `useChat` message parts for generative UI, telemetry. Requires Node 22+ |
-| Chat primitives | AI Elements (shadcn registry) as a reference or starting point | Saves plumbing (scroll, streaming, tool states). The look is close to ChatGPT, so little restyling is needed. Decided per dependency in Stage 4 |
+| Chat primitives | Own components in `components/chat/` on `useChat`, `react-markdown` for answers | Stage 4 needed a handful of pieces. AI Elements would have brought shadcn, Radix and Streamdown (see the decisions log) |
 | Validation | zod 4 | Content schemas and tool inputs |
 | Rate limiting | Upstash Redis + `@upstash/ratelimit` | Serverless-friendly |
 | Tests | Vitest (unit), Playwright (e2e, a11y via axe), eval runner script | |
@@ -89,3 +89,14 @@ Each returns `{ data, sources }`. There are no write, fetch or exec tools, ever.
 | 2026-09-26 | The assistant still speaks about James in the third person | James's choice. Answers never become claims in his voice |
 | 2026-09-26 | Ground answers with the full knowledge base in a cached system prompt, not a search index | The corpus is about 11K tokens. Full context is simpler and more accurate at this size, and caching keeps it cheap |
 | 2026-09-26 | Kept from the first Stage 4 attempt: `lib/knowledge/queries.ts`, `lib/knowledge/format.ts`, and `relatedProjects` on known FAQs | The Stage 6 tools and answer cards need the same lookups and labels |
+| 2026-09-26 | AI Elements not used. The chat is built from its own small components on `useChat` | The chat needs a composer, a message list and a Markdown renderer. The registry brings shadcn, Radix and Streamdown for that |
+| 2026-09-26 | Answers render with `react-markdown`: raw HTML skipped, only answer elements allowed (others unwrapped to text, so no images), links open in a new tab | Streamdown turns on raw HTML (`rehype-raw`) by default. Answers need lists, emphasis and links only. A new tab keeps the unsaved conversation |
+| 2026-09-26 | Rules and knowledge are one system message with an ephemeral cache breakpoint, built once per server instance and byte-stable | About 7K tokens, above Haiku 4.5's 4,096-token cache minimum. Any varying byte would miss the cache on every request |
+| 2026-09-26 | Default model `claude-haiku-4-5`. `CHAT_MODEL` overrides it from an allowlist (Haiku 4.5, Sonnet 5, Opus 5); the newer models run at `effort: low` | The plan picks the cheapest model that passes the 15-question smoke test (`bun run smoke:chat`), which waits for James's key |
+| 2026-09-26 | `CHAT_MODEL_MOCK=1` swaps Claude for a scripted `MockLanguageModelV4` (`ai/test`). The env schema refuses it when `VERCEL_ENV=production` | e2e drives the real route (validation, streaming, Stop) with no key and no cost, and the UI can be worked on without a key |
+| 2026-09-26 | `ANTHROPIC_API_KEY` is optional in the env schema. The route answers 503 without it | Build and CI run without secrets |
+| 2026-09-26 | The route passes only text parts to the model, rebuilt as plain `{ role, content }` messages | A forged body cannot add files, tool results or system turns |
+| 2026-09-26 | The page scrolls, not an inner panel. Header and composer are sticky | Native scrolling works best for keyboard, screen readers and mobile browser chrome |
+| 2026-09-26 | The finished answer is announced once, as plain text, from `useChat`'s `onFinish` through one polite live region. Stop and errors are announced the same way | The streaming node is never a live region (DESIGN_RESEARCH §7) |
+| 2026-09-26 | Send and Stop are one button element whose label and action swap | Keyboard focus survives the state change |
+| 2026-09-26 | `scan:static` runs after the build in `check` and CI. It fails on an API key pattern, the configured key, or a server-only variable name in `.next/static` | Stage 4 "Done when": no key in the client bundle |

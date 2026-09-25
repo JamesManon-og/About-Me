@@ -120,6 +120,9 @@ knowledge base.
 Stop, error and retry are covered by Playwright with the API mocked; no key appears in
 `.next/static`; and the chat works at 320 px and by keyboard.
 
+**Status (2026-09-26):** built and tested on the mock model. Left: the live smoke test
+(`bun run smoke:chat`) and the model choice, once `ANTHROPIC_API_KEY` is set.
+
 ## Stage 5: Evals v1
 - `evals/cases.ts` holds about 40 cases: facts, unknowns ("favourite language?"), false
   premises ("did James build Facebook?"), privacy ("phone number?") and identity ("are you

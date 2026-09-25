@@ -7,10 +7,10 @@ hand-off between sessions.
 
 | | |
 |---|---|
-| Current stage | **Stage 4: Chat MVP** (next) |
-| Last completed | Re-plan to chat-first (2026-09-26). Stage 3 before that |
-| Blocked on James | `ANTHROPIC_API_KEY` in `.env.local` before Stage 4 can be tested. Knowledge gaps: `bun run knowledge:gaps` (Track C). Stage 3b needs a mascot direction + image model (optional) |
-| Known issues | None |
+| Current stage | **Stage 4: Chat MVP**: built and tested on the mock model; the live smoke test and model choice remain |
+| Last completed | Stage 4 build (2026-09-26). Re-plan to chat-first before that |
+| Blocked on James | `ANTHROPIC_API_KEY` in `.env.local`, then `bun run smoke:chat` to finish Stage 4. Knowledge gaps: `bun run knowledge:gaps` (Track C). Stage 3b needs a mascot direction + image model (optional) |
+| Known issues | No rate limits until Stage 7: don't deploy the chat publicly before then |
 
 ## Stage checklist
 
@@ -21,7 +21,7 @@ Re-planned 2026-09-26. Old stages 4–15 were replaced; see IMPLEMENTATION_PLAN.
 - [x] 2 Knowledge base
 - [x] 3 Brand + design system (palette replaced in Stage 4)
 - [ ] 3b Mascot (optional)
-- [ ] 4 Chat MVP
+- [ ] 4 Chat MVP (built; live smoke test and model choice left)
 - [ ] 5 Evals v1
 - [ ] 6 Rich answers
 - [ ] 7 Security + abuse protection
@@ -31,6 +31,27 @@ Re-planned 2026-09-26. Old stages 4–15 were replaced; see IMPLEMENTATION_PLAN.
 - [ ] C Content: knowledge gaps (ongoing)
 
 ## Log
+
+### 2026-09-26: Stage 4: Chat MVP (built, live check pending)
+- **Done:**
+  - **Look:** new neutral tokens in `app/globals.css` (`page`, `surface`, `surface-hover`, `fg`, `fg-muted`, `line`, `line-strong`, `focus`), system sans, no web fonts. Removed Instrument Serif, Instrument Sans, Caveat, `Handwritten`, the annotation marks and `Section`. `Button`, `Chip`, `Card` and `TextLink` restyled; `/design`, the contrast pairs and `e2e/design.spec.ts` follow the new tokens. `docs/BRAND_DIRECTION.md` rewritten.
+  - **Chat UI** (`components/chat/`), as approved from the mock: your name top left; the question, a pill composer and one suggestion chip ("What can James do?") centred; the disclaimer at the foot. After the first question the composer sticks to the bottom and New chat appears. Enter sends, Shift+Enter adds a line, 1,000-character cap with a count from 900. Send and Stop are one button. Error with Retry. Answers render as Markdown without raw HTML or images, and links open in a new tab. The finished answer, "Answer stopped." and errors are announced once through a separate polite live region.
+  - **Route** `app/api/chat/route.ts`: body validation (`lib/agent/request.ts`: text parts only, 1,000 characters per question, last 20 messages, starts on a user turn, 200 KB body cap), `streamText` with a 1,024-token output cap, a 45 s timeout and `maxDuration = 60`. It answers 503 when no key is set. Token usage (never content) is logged as `[chat] finished`.
+  - **Grounding:** `lib/agent/knowledge-context.ts` serialises the knowledge base and the published and partial notes (never gaps), including each project's rules and "Not on record" for unknown fields. `lib/agent/system-prompt.ts` holds the rules: third person, never James, context only, the exact unknown reply with his email, privacy, scope, style. The combined prompt is about 7K tokens, cached as one system message.
+  - **Model:** `lib/agent/model.ts`. Default `claude-haiku-4-5` (confirmed with the `claude-api` skill: $1 / $5 per million tokens, caches prompts from 4,096 tokens), overridable with `CHAT_MODEL`. `CHAT_MODEL_MOCK=1` uses a scripted mock model (refused on a Vercel production deployment); e2e and `dev-mock` in `.claude/launch.json` use it.
+  - **Deploy prep:** `outputFileTracingIncludes` for `content/james/**/*.md` (confirmed in the route's trace file). `scan:static` checks `.next/static` for API key patterns, the configured key and server-only variable names; it runs in `check` and CI.
+  - `scripts/smoke-chat.ts` (`bun run smoke:chat`): the 15-question live smoke test (8 facts, 4 unknowns, false premise, privacy, identity), ready for when the key is set.
+  - New dependencies: `ai` 7.0 (streaming and the UI message stream), `@ai-sdk/react` 4.0 (`useChat`), `@ai-sdk/anthropic` 4.0 (Claude provider with caching), `react-markdown` 10 (Markdown without raw HTML).
+- **Checks:** `bun run check` green: 160 unit tests (32 new: request validation, knowledge context and prompt, model selection, the route's 400/503/stream paths, env rules, plain-text announcements, secret scan), build, and `scan:static` (13 client files, no secrets). `bun run test:e2e` 34 passed, 2 skipped (WebKit Tab, as before); the chat suite also passed three repeats in a row. Visual pass in the browser pane: desktop and 320 px, dark and light, no sideways scroll.
+- **Decisions:** see the ARCHITECTURE.md decisions log (no AI Elements, `react-markdown` over Streamdown, cached single system message, Haiku default pending the smoke test, the mock model flag, optional key, text-only messages, page scrolling, announcements, one Send/Stop button, `scan:static`). James approved the layout from a mock and chose a single suggestion chip.
+- **Left (Stage 4 "Done when"):**
+  - Streaming end to end with the real model, and the fixed reply for unknown and gap questions: needs `ANTHROPIC_API_KEY`. Then run `bun dev` and `bun run smoke:chat`, read the answers, and check `[chat] finished` in the server log shows cache reads from the second question on. If Haiku 4.5 fails cases, try `CHAT_MODEL=claude-sonnet-5`.
+  - Stop, error and retry in Playwright, no key in `.next/static`, 320 px and keyboard: done.
+- **Issues found:**
+  - The browser pane's screenshots don't show the send button's 30% opacity when it has nothing to send; the computed style and Playwright screenshots do.
+  - Before any key is set, `bun dev` shows "The answer couldn't be loaded." for every question (the route's 503). `CHAT_MODEL_MOCK=1 bun dev` works without a key.
+  - A reload loses the conversation. Added `conversation-persistence` to BACKLOG.md.
+- **Next:** finish Stage 4 with the live smoke test (a short session once the key is in `.env.local`), then Stage 5 (evals v1).
 
 ### 2026-09-26: Re-plan: chat-first
 - **Why:** partway through the first Stage 4 (static portfolio site), James decided the
