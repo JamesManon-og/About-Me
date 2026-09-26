@@ -20,6 +20,9 @@ Status: `idea` → `ready` (brief written) → `in progress` → `done`.
 | `analytics-lite`: privacy-friendly counts of which prompts get asked | Learn what visitors want | Stage 10 | idea |
 | `voice-mode`: ask by voice (AI SDK 7 speech), the mic button in the input | Novel. Only if it earns its place | Stage 10 | idea |
 | `conversation-persistence`: keep the chat across a reload (sessionStorage) | A reload or back navigation currently loses the conversation | Stage 8 | idea |
+| `claude-path-guards`: Upstash rate limits, a runtime output filter and the injection eval set | Required before `ANTHROPIC_API_KEY` is set in production (docs/DEPLOYMENT.md) | Stage 7 | ready |
+| `answer-cards`: project cards and a sources footnote attached to FAQ entries | Stage 6 remainder; richer answers without a model | Stage 6 | idea |
+| `routing-holdout`: a fresh batch of visitor-style questions to re-measure matching | The current validation batch has been tuned on | Stage 5 | idea |
 | `profile-pages`: static, crawlable pages (about, projects) if search traffic turns out to matter | SEO beyond one chat page. Built once in the first Stage 4 attempt and removed | Stage 9 | idea |
 
 Add ideas freely. Keep the "Why" to one line; if you can't write it, the feature probably

@@ -13,6 +13,14 @@ attempt were removed before commit. The old stages 4 to 15 are replaced by the s
 Order rationale: the chat works end to end first, then it is measured (evals), then it
 gets richer answers. Security and evals come before deployment.
 
+**Re-planned again 2026-09-26: prebuilt answers first, Claude optional.** James wants the
+site to work with no API key and no running cost. Answers now come from a prebuilt set that
+James approves (`data/james/faq.ts`), matched to the visitor's question without any model.
+Only a question that matches nothing goes to Claude, and only when `ANTHROPIC_API_KEY` is
+set. Without a key it gets the fixed unknown reply and the closest questions as chips.
+Stage 5 changed from "Evals v1" to "Prebuilt answers, matcher and evals"; the model-graded
+eval built earlier in Stage 5 stays for the optional Claude path.
+
 | # | Stage | Depends on | Branch |
 |---|---|---|---|
 | 0 | Audit + research | none | done |
@@ -21,7 +29,7 @@ gets richer answers. Security and evals come before deployment.
 | 3 | Brand + design system (palette replaced in Stage 4) | 1 | done |
 | 3b | Mascot (angel), optional | direction + image model | `stage/03b-mascot` |
 | 4 | Chat MVP: landing, conversation, streaming route, grounded answers | 2, 3 | `stage/04-chat` |
-| 5 | Evals v1 | 4 | `stage/05-evals` |
+| 5 | Prebuilt answers, matcher and evals | 4 | `stage/05-evals` |
 | 6 | Rich answers: cards, sources, follow-ups | 5 | `stage/06-rich-answers` |
 | 7 | Security + abuse protection | 4 | `stage/07-security` |
 | 8 | Polish: motion, accessibility, responsive | 6 | `stage/08-polish` |
@@ -120,17 +128,40 @@ knowledge base.
 Stop, error and retry are covered by Playwright with the API mocked; no key appears in
 `.next/static`; and the chat works at 320 px and by keyboard.
 
-**Status (2026-09-26):** built and tested on the mock model. Left: the live smoke test
-(`bun run smoke:chat`) and the model choice, once `ANTHROPIC_API_KEY` is set.
+**Status (2026-09-26):** built and tested on the mock model. With the prebuilt-answer
+re-plan, the chat works end to end without a key once Stage 5 lands. The live Claude check
+and model choice become optional: run `bun run eval` if a key is ever set. The eval
+replaced the 15-question smoke test.
 
-## Stage 5: Evals v1
-- `evals/cases.ts` holds about 40 cases: facts, unknowns ("favourite language?"), false
-  premises ("did James build Facebook?"), privacy ("phone number?") and identity ("are you
-  James?"). `scripts/eval.ts` runs them against the real route and prints pass/fail: string
-  rules for refusals and the fixed reply, and a model-graded check for fact answers.
+## Stage 5: Prebuilt answers, matcher and evals
+Re-planned 2026-09-26 (see the note at the top).
 
-**Done when:** ≥ 90% of fact cases pass and 100% of unknown, privacy, false-premise and
-identity cases pass.
+- **Answer set:** `data/james/faq.ts` grows from 15 entries to about 60: every common question
+  about James, written only from the knowledge base and approved by James. Each entry has
+  sources, alternative phrasings for matching, and optional follow-up questions. Unknown
+  topics stay `known: false` and answer with the fixed unknown reply.
+- **Matcher** (`lib/answers/`): no model and no dependency. Normalised words, a few
+  synonyms, typo tolerance, and weighting by how rare a word is. A question is answered only
+  when the match explains most of it, so an unfamiliar name (Google, MIT) falls back rather
+  than matching the wrong answer. Follow-ups ("did he build it alone?") use the project the
+  previous question was about.
+- **Route:** a confident match streams the approved answer. Otherwise Claude answers if a key
+  is set; if not, the fixed unknown reply plus the three closest questions as chips.
+  Messages carry which path answered (`answer`, `fallback` or `model`).
+- **UI** (after James approves the mock): follow-up chips under an answer, and "closest
+  questions" chips under the fallback.
+- **Evals:** `evals/cases.ts` (47 cases) records which answers are acceptable for each
+  question. A unit test runs every case through the matcher, so `bun run check` gates
+  routing for free. `bun run eval` runs the cases end to end through the route; answers
+  from the prebuilt set are graded by rules and routing, and the Claude judge is used only
+  for answers Claude wrote (optional, needs a key).
+
+**Done when:** James has approved the answer set; ≥ 90% of fact cases and 100% of unknown,
+privacy, false-premise and identity cases route to an acceptable answer or the fallback;
+every prebuilt answer passes the rule checks; and the chat works end to end with no key.
+
+**Status (2026-09-26):** built. 66 entries (60 answers, 6 known gaps), 97 eval cases, `bun run eval` passes with no
+key (facts 96.7%, every other kind 100%). Left: James's review of the answers.
 
 ## Stage 6: Rich answers
 - Read-only display tools built on `lib/knowledge/queries.ts`: `getProject`,
@@ -142,10 +173,23 @@ identity cases pass.
 
 **Done when:** each renderer has a test and works by keyboard and screen reader.
 
+**Status (2026-09-26):** partly done. Follow-up chips shipped with Stage 5 ("Related" and
+"Closest questions"). Cards and a sources footnote are deferred: with prebuilt answers they
+would hang off FAQ entries rather than model tools, and they aren't needed to launch.
+
 ## Stage 7: Security + abuse protection
 Upstash rate limits (per IP, plus a global daily cap), input caps, history truncation, an
 output filter (no phone numbers; email only from `getContact`), sanitised markdown, the link
 allowlist from `data/james/links.ts`, CSP and security headers, and an injection eval set.
+Since the 2026-09-26 re-plan, rate limits, the output filter and the injection set matter
+only when the Claude path is on (a key is set); headers, CSP and input caps apply always.
+
+**Status (2026-09-26):** the parts that apply without a key are done: security headers and
+CSP (`lib/security/headers.ts`), input caps, Markdown without raw HTML, and a rules check
+that every prebuilt answer has no phone number, no other email and only allowlisted links.
+Off-topic and injection questions fall back instead of matching. Left, and required before
+a key is set in production: Upstash rate limits, a runtime output filter for Claude's
+answers, and the injection eval set (docs/DEPLOYMENT.md, "Turning on Claude").
 
 **Done when:** 100% of adversarial evals pass and `/security-review` shows no high findings.
 
@@ -157,11 +201,20 @@ reduced-motion support, focus order, the on-screen keyboard on mobile
 **Done when:** zero serious or critical axe violations, a manual VoiceOver pass, and no
 jank on a mid-tier mobile profile.
 
+**Status (2026-09-26):** axe runs in the e2e suite (both themes, desktop and mobile, no
+serious or critical violations), `interactive-widget=resizes-content` is set, and the
+composer refits when its width changes. Mobile Lighthouse: accessibility 100, performance
+96. Left: James's VoiceOver pass. Message entrance motion stays optional.
+
 ## Stage 9: SEO + sharing
 Metadata, an OG image, JSON-LD `Person`, sitemap, robots and canonical URL. `?ask=` links
 open the chat with a question filled in.
 
 **Done when:** mobile Lighthouse SEO ≥ 95 and a shared `?ask=` link works.
+
+**Status (2026-09-26):** done. Metadata, share image (`app/opengraph-image.tsx`), JSON-LD
+`Person`, sitemap, robots and canonical URL. `?ask=` asks its question on arrival, then
+removes itself from the URL. Mobile Lighthouse SEO 100 on the production build.
 
 ## Stage 10: Hardening, deployment, final QA
 Error boundaries, a provider-down fallback, telemetry, a spend cap, a bundle audit,
@@ -170,6 +223,11 @@ Playwright in CI, and `docs/AI_EVALUATION.md` with the evals expanded to about 1
 Vercel project and sets env vars; deploy a preview, run e2e and evals against it, and
 promote. Review as recruiter, first-time visitor, mobile user, AI engineer and security
 engineer. **Only report success after checking the live URL.**
+
+**Status (2026-09-26):** ready to deploy. Error page and 404 page, Playwright (with axe) in
+CI, `vercel.json` (region `sin1`), and [DEPLOYMENT.md](DEPLOYMENT.md) with the steps and
+the checks to run on the live URL. Telemetry and a spend cap only matter once a key is
+set. Left, for James: the Vercel import and deploy, then the live checks in DEPLOYMENT.md.
 
 ## Track C: Content (any time)
 James answers the open gaps listed by `bun run knowledge:gaps`: target roles, strengths, a

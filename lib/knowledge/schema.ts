@@ -172,20 +172,41 @@ export const PrincipleSchema = z.object({
 });
 
 /** A `null` answer is a known unknown: the agent must say it doesn't know. */
+/**
+ * Other ways a visitor might ask the same question. Used only for matching, never shown.
+ * Must not copy an eval case's question (evals/cases.ts), or the eval stops being a test.
+ */
+const variants = z.array(z.string().min(1)).optional();
+
+/**
+ * The prebuilt answer set: the chat answers these without a model (lib/answers/).
+ * `known: false` entries are deliberate: the chat replies that it doesn't have that
+ * information instead of guessing.
+ */
 export const FaqSchema = z.discriminatedUnion("known", [
   z.object({
     id: slug,
     known: z.literal(true),
     question: z.string().min(1),
+    variants,
+    /** Markdown. Written only from the knowledge base and approved by James. */
     answer: z.string().min(1),
     sources: sourceList,
-    /** Answers linked to a project, for project cards and follow-ups. */
+    /** Answers linked to a project, for project cards and follow-up topics. */
     relatedProjects: z.array(slug).optional(),
+    /** Questions offered as chips after this answer, by FAQ id. */
+    followUps: z.array(slug).optional(),
+    /**
+     * Specific names (technologies, places, issuers) that point to this answer even when no
+     * phrasing matches, such as "Spring Boot" for the skills answer.
+     */
+    keywords: z.array(z.string().min(1)).optional(),
   }),
   z.object({
     id: slug,
     known: z.literal(false),
     question: z.string().min(1),
+    variants,
     answer: z.null(),
   }),
 ]);
@@ -283,10 +304,19 @@ export const KnowledgeSchema = z
     k.experience.forEach((e, i) =>
       checkProjects(e.relatedProjects, ["experience", i, "relatedProjects"]),
     );
+    const faqIds = new Set(k.faq.map((f) => f.id));
     k.faq.forEach((f, i) => {
-      if (f.known) {
-        checkProjects(f.relatedProjects, ["faq", i, "relatedProjects"]);
-      }
+      if (!f.known) return;
+      checkProjects(f.relatedProjects, ["faq", i, "relatedProjects"]);
+      f.followUps?.forEach((id, j) => {
+        if (!faqIds.has(id) || id === f.id) {
+          ctx.addIssue({
+            code: "custom",
+            path: ["faq", i, "followUps", j],
+            message: `Unknown or self follow-up "${id}"`,
+          });
+        }
+      });
     });
   });
 

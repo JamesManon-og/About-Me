@@ -18,6 +18,8 @@ export const serverSchema = z.object({
     .default("development"),
   /** Set by Vercel on deployments. Absent locally. */
   VERCEL_ENV: z.enum(["development", "preview", "production"]).optional(),
+  /** Set by Vercel: the production domain, without a scheme. The site URL falls back to it. */
+  VERCEL_PROJECT_PRODUCTION_URL: z.string().min(1).optional(),
   /**
    * Optional so the build and CI run without it. The chat route answers 503 when it is
    * missing and the mock model is off.
@@ -72,6 +74,7 @@ function readSource(): EnvSource {
   return {
     NODE_ENV: process.env.NODE_ENV,
     VERCEL_ENV: process.env.VERCEL_ENV,
+    VERCEL_PROJECT_PRODUCTION_URL: process.env.VERCEL_PROJECT_PRODUCTION_URL,
     ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
     CHAT_MODEL: process.env.CHAT_MODEL,
     CHAT_MODEL_MOCK: process.env.CHAT_MODEL_MOCK,

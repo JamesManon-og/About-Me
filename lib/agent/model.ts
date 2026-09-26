@@ -7,7 +7,7 @@ import type { Env } from "@/lib/env";
 /**
  * Picks the model for the chat route.
  *
- * Default: the cheapest current model. The Stage 4 smoke test decides whether it holds;
+ * Default: the cheapest current model. `bun run eval` with a key decides whether it holds;
  * CHAT_MODEL overrides it without a code change.
  */
 export const DEFAULT_CHAT_MODEL = "claude-haiku-4-5";

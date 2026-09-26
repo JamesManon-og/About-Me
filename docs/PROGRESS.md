@@ -7,10 +7,10 @@ hand-off between sessions.
 
 | | |
 |---|---|
-| Current stage | **Stage 4: Chat MVP**: built and tested on the mock model; the live smoke test and model choice remain |
-| Last completed | Stage 4 build (2026-09-26). Re-plan to chat-first before that |
-| Blocked on James | `ANTHROPIC_API_KEY` in `.env.local`, then `bun run smoke:chat` to finish Stage 4. Knowledge gaps: `bun run knowledge:gaps` (Track C). Stage 3b needs a mascot direction + image model (optional) |
-| Known issues | No rate limits until Stage 7: don't deploy the chat publicly before then |
+| Current stage | **Ready to deploy.** Prebuilt answers (Stage 5), SEO (Stage 9) and the keyless parts of Stages 7, 8 and 10 are built and tested |
+| Last completed | Prebuilt answers, SEO and deployment prep (2026-09-26) |
+| Blocked on James | 1. Read and approve every answer in `data/james/faq.ts`. 2. A VoiceOver pass. 3. Import the repo on Vercel and run the live checks in `docs/DEPLOYMENT.md` |
+| Known issues | Don't set `ANTHROPIC_API_KEY` in production before rate limits exist (BACKLOG `claude-path-guards`). Two validation questions fall back ("Does James speak Java?", "is he open to remote roles") |
 
 ## Stage checklist
 
@@ -21,16 +21,84 @@ Re-planned 2026-09-26. Old stages 4–15 were replaced; see IMPLEMENTATION_PLAN.
 - [x] 2 Knowledge base
 - [x] 3 Brand + design system (palette replaced in Stage 4)
 - [ ] 3b Mascot (optional)
-- [ ] 4 Chat MVP (built; live smoke test and model choice left)
-- [ ] 5 Evals v1
-- [ ] 6 Rich answers
-- [ ] 7 Security + abuse protection
-- [ ] 8 Polish: motion, accessibility, responsive
-- [ ] 9 SEO + sharing
-- [ ] 10 Hardening, deployment, final QA
+- [x] 4 Chat MVP (the Claude path stays optional, behind a key)
+- [ ] 5 Prebuilt answers, matcher and evals (built; James's review of the answers left)
+- [ ] 6 Rich answers (follow-up chips done; cards deferred to BACKLOG `answer-cards`)
+- [ ] 7 Security + abuse protection (keyless parts done; `claude-path-guards` before any key)
+- [ ] 8 Polish: motion, accessibility, responsive (axe clean; VoiceOver pass left)
+- [x] 9 SEO + sharing
+- [ ] 10 Hardening, deployment, final QA (ready; James deploys and checks the live URL)
 - [ ] C Content: knowledge gaps (ongoing)
 
 ## Log
+
+### 2026-09-26: Prebuilt answers, evals, SEO and deployment prep
+- **Why:** James didn't want the site to need an API key or cost money to run. Asked for
+  options, he chose "prebuilt answers first, Claude optional". Midway he asked for a warmer,
+  more human voice, and then to finish everything up to deployment in this session.
+- **Done:**
+  - **Answer set** (`data/james/faq.ts`): 66 entries (60 answers, 6 known gaps), each with
+    sources, 221 alternative phrasings, follow-up chips, and keywords for specific names.
+    Written from the knowledge base only, in a warmer voice: lead with the point and the
+    thinking behind the work. The existing 15 FAQs were rewritten in that voice. Greeting and
+    thanks entries added. The FAQ schema gained `variants`, `followUps` and `keywords`.
+  - **Matcher** (`lib/answers/match.ts`, no dependency): word folding, synonyms, stemming,
+    typo tolerance, rarity weights, phrase and whole-entry scoring, exact match for chips, and
+    a coverage threshold so unfamiliar names fall back. Follow-ups inherit the project from
+    the conversation (`lib/answers/respond.ts`).
+  - **Route:** a matched question streams the approved answer, with no model. An unmatched
+    one gets the fixed unknown reply plus the three closest questions, or Claude if a key is
+    set. Message metadata says which path answered; chips travel as a `data-suggestions` part.
+  - **UI:** "Related" chips under answers and "Closest questions I can answer" under the
+    fallback, as mocked and approved. The composer refits its height when its width changes.
+  - **Evals:** 97 cases (47 from earlier, 20 casual paraphrases, 30 validation questions).
+    `bun run eval` grades prebuilt answers by rules plus routing and is free without a key.
+    The judge only grades answers Claude writes. `evals/routing.test.ts` gates routing in
+    `bun run check`. The Stage 4 smoke test was folded in and removed.
+  - **SEO (Stage 9):** metadata and canonical URL (`lib/site.ts`), share image, JSON-LD
+    `Person`, sitemap, robots, and `?ask=` links that ask on arrival.
+  - **Security (Stage 7, keyless parts):** CSP and hardening headers (`lib/security/headers.ts`),
+    no `X-Powered-By`.
+  - **Hardening (Stages 8 and 10):** axe checks in e2e (new dev dependency
+    `@axe-core/playwright`), error and 404 pages, `interactive-widget=resizes-content`,
+    Playwright job in CI, `vercel.json` (region `sin1`), and `docs/DEPLOYMENT.md`.
+- **Checks:**
+  - `bun run check` green: 265 unit tests, the build and `scan:static`. The build lists `/`,
+    the share image, robots and the sitemap as static.
+  - `bun run test:e2e`: 48 passed, 2 skipped (WebKit Tab, as before).
+  - `bun run eval`, no key: facts 59/61 (96.7%), unknown 14/14, false premise 7/7,
+    privacy 8/8, identity 7/7. No model calls.
+  - Mobile Lighthouse on the production build: performance 96, accessibility 100,
+    best practices 96, SEO 100.
+  - Browser pane at 375 px: fallback chips, `?ask=` link, no sideways scroll, no console
+    errors, no CSP violations.
+  - Off-topic, injection and unknown-name questions (31 tried) all fall back, except
+    Spring Boot and Docker, which correctly land on skills and DevOps.
+- **Measured honestly:** routing was tuned against the first 67 cases, which reached 67/67.
+  The 30 validation questions were written afterwards: first score 17/30, with every miss a
+  safe fallback and no wrong answers. After general fixes (synonyms, stopwords, whole-entry
+  scoring, a few natural phrasings) it reached 28/30. Two expectations were corrected where
+  the fallback met the case's own criterion. The validation set has now been tuned on, so
+  BACKLOG `routing-holdout` is the next honest measure.
+- **Decisions:** see the ARCHITECTURE.md decisions log (prebuilt first, hand-written matcher,
+  coverage threshold 0.65, project entity rule, fallback text plus chips, metadata per path,
+  routing gate in `check`, warmer voice, CSP without nonces, canonical URL fallback, `?ask=`
+  on the client, axe, region).
+- **Left:**
+  - James: review every answer in `data/james/faq.ts`, since the site shows them word for word.
+  - James: a VoiceOver pass (Stage 8).
+  - James: the Vercel import and deploy, then the live checks in `docs/DEPLOYMENT.md`.
+  - Before any key in production: BACKLOG `claude-path-guards`.
+  - Deferred: answer cards and a sources footnote (BACKLOG `answer-cards`).
+- **Issues found:**
+  - A textarea mounted at zero width (a tab that loaded while hidden) stayed 200 px tall. It
+    now refits when its width changes.
+  - The e2e "last answer" helper matched bullets inside an answer's own Markdown list. It is
+    now scoped to the conversation's items.
+  - Lighthouse flags one CSP "inspector issue" with no URL. No violation fires in the page
+    itself, so it looks like Lighthouse's own instrumentation.
+- **Next:** James reviews the answers and deploys. After that, content sessions (Track C)
+  fill the known gaps, and each new fact becomes an answer in `data/james/faq.ts`.
 
 ### 2026-09-26: Stage 4: Chat MVP (built, live check pending)
 - **Done:**

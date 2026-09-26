@@ -1,14 +1,12 @@
 import { expect, test } from "@playwright/test";
 
+import { collectErrors } from "./console";
+
 test.describe("/design preview", () => {
   test("renders without console errors and is not indexed", async ({
     page,
   }) => {
-    const errors: string[] = [];
-    page.on("console", (message) => {
-      if (message.type() === "error") errors.push(message.text());
-    });
-    page.on("pageerror", (error) => errors.push(error.message));
+    const errors = collectErrors(page);
 
     await page.goto("/design");
 

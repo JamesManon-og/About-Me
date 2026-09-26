@@ -1,21 +1,33 @@
 "use client";
 
-import type { ChatStatus, UIMessage } from "ai";
+import type { ChatStatus } from "ai";
+import { useId } from "react";
 import { Button } from "@/components/ui/button";
+import { Chip } from "@/components/ui/chip";
+import type { ChatData, ChatMessage } from "@/lib/chat/message";
 import { COPY } from "./copy";
 import { AnswerMarkdown } from "./markdown";
 
-export function messageText(message: UIMessage): string {
+export function messageText(message: ChatMessage): string {
   return message.parts
     .map((part) => (part.type === "text" ? part.text : ""))
     .join("");
 }
 
+function suggestionsOf(message: ChatMessage): ChatData["suggestions"] | null {
+  for (const part of message.parts) {
+    if (part.type === "data-suggestions") return part.data;
+  }
+  return null;
+}
+
 type MessageListProps = {
-  messages: UIMessage[];
+  messages: ChatMessage[];
   status: ChatStatus;
   error: Error | undefined;
   onRetry: () => void;
+  /** Asks a suggested question. */
+  onAsk: (question: string) => void;
 };
 
 /**
@@ -27,8 +39,15 @@ export function MessageList({
   status,
   error,
   onRetry,
+  onAsk,
 }: MessageListProps) {
   const waiting = status === "submitted";
+  const last = messages.at(-1);
+  // Chips belong to the latest answer only, once it has finished.
+  const suggestions =
+    status === "ready" && last?.role === "assistant"
+      ? suggestionsOf(last)
+      : null;
 
   return (
     <section aria-label="Conversation" className="flex-1 pt-4 pb-8">
@@ -50,6 +69,9 @@ export function MessageList({
             <li key={message.id}>
               <span className="sr-only">Answer: </span>
               <AnswerMarkdown text={text} />
+              {message === last && suggestions?.questions.length ? (
+                <Suggestions suggestions={suggestions} onAsk={onAsk} />
+              ) : null}
             </li>
           );
         })}
@@ -72,5 +94,29 @@ export function MessageList({
         </div>
       ) : null}
     </section>
+  );
+}
+
+function Suggestions({
+  suggestions,
+  onAsk,
+}: {
+  suggestions: ChatData["suggestions"];
+  onAsk: (question: string) => void;
+}) {
+  const labelId = useId();
+  return (
+    <div role="group" aria-labelledby={labelId} className="mt-4">
+      <p id={labelId} className="mb-2 text-caption text-fg-muted">
+        {suggestions.kind === "related" ? COPY.related : COPY.closest}
+      </p>
+      <div className="flex flex-wrap gap-2">
+        {suggestions.questions.map((question) => (
+          <Chip key={question} onClick={() => onAsk(question)}>
+            {question}
+          </Chip>
+        ))}
+      </div>
+    </div>
   );
 }
