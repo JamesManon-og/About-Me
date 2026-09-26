@@ -1,11 +1,9 @@
 import { expect, test } from "@playwright/test";
 
+import { collectErrors } from "./console";
+
 test("home page renders without console errors", async ({ page }) => {
-  const errors: string[] = [];
-  page.on("console", (message) => {
-    if (message.type() === "error") errors.push(message.text());
-  });
-  page.on("pageerror", (error) => errors.push(error.message));
+  const errors = collectErrors(page);
 
   await page.goto("/");
 
