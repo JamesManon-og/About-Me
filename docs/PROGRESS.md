@@ -7,9 +7,9 @@ hand-off between sessions.
 
 | | |
 |---|---|
-| Current stage | **Ready to deploy.** Prebuilt answers (Stage 5), SEO (Stage 9) and the keyless parts of Stages 7, 8 and 10 are built and tested |
-| Last completed | Prebuilt answers, SEO and deployment prep (2026-09-26) |
-| Blocked on James | 1. Read and approve every answer in `data/james/faq.ts`. 2. A VoiceOver pass. 3. Import the repo on Vercel and run the live checks in `docs/DEPLOYMENT.md` |
+| Current stage | **Ready to deploy.** Stage 5 done (answer set approved). SEO (Stage 9) and the keyless parts of Stages 7, 8 and 10 are built and tested |
+| Last completed | Answer set approved, Stage 5 closed (2026-09-26) |
+| Blocked on James | 1. Import the repo on Vercel and run the live checks in `docs/DEPLOYMENT.md`. 2. A VoiceOver pass |
 | Known issues | Don't set `ANTHROPIC_API_KEY` in production before rate limits exist (BACKLOG `claude-path-guards`). Two validation questions fall back ("Does James speak Java?", "is he open to remote roles") |
 
 ## Stage checklist
@@ -22,7 +22,7 @@ Re-planned 2026-09-26. Old stages 4–15 were replaced; see IMPLEMENTATION_PLAN.
 - [x] 3 Brand + design system (palette replaced in Stage 4)
 - [ ] 3b Mascot (optional)
 - [x] 4 Chat MVP (the Claude path stays optional, behind a key)
-- [ ] 5 Prebuilt answers, matcher and evals (built; James's review of the answers left)
+- [x] 5 Prebuilt answers, matcher and evals
 - [ ] 6 Rich answers (follow-up chips done; cards deferred to BACKLOG `answer-cards`)
 - [ ] 7 Security + abuse protection (keyless parts done; `claude-path-guards` before any key)
 - [ ] 8 Polish: motion, accessibility, responsive (axe clean; VoiceOver pass left)
@@ -31,6 +31,16 @@ Re-planned 2026-09-26. Old stages 4–15 were replaced; see IMPLEMENTATION_PLAN.
 - [ ] C Content: knowledge gaps (ongoing)
 
 ## Log
+
+### 2026-09-26: Answer set approved, Stage 5 closed
+- **Decision (James):** approved the answer set in `data/james/faq.ts` as written, without
+  a line-by-line edit ("just go with it"). Wording can still change later through the
+  process in `docs/DEPLOYMENT.md` ("Updating what the chat says").
+- **Checks on `main` (after PR #7):** `bun run check` green; `bun run test:e2e` 48 passed,
+  2 skipped (WebKit Tab); `bun run eval` with no key passed (facts 59/61, every other kind
+  100%, no model calls).
+- **Next:** James imports the repo on Vercel with no environment variables and runs the
+  live checks in `docs/DEPLOYMENT.md`. Then the VoiceOver pass.
 
 ### 2026-09-26: Prebuilt answers, evals, SEO and deployment prep
 - **Why:** James didn't want the site to need an API key or cost money to run. Asked for

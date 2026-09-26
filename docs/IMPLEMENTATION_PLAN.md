@@ -160,8 +160,8 @@ Re-planned 2026-09-26 (see the note at the top).
 privacy, false-premise and identity cases route to an acceptable answer or the fallback;
 every prebuilt answer passes the rule checks; and the chat works end to end with no key.
 
-**Status (2026-09-26):** built. 66 entries (60 answers, 6 known gaps), 97 eval cases, `bun run eval` passes with no
-key (facts 96.7%, every other kind 100%). Left: James's review of the answers.
+**Status (2026-09-26):** done. 66 entries (60 answers, 6 known gaps), 97 eval cases, `bun run eval` passes with no
+key (facts 96.7%, every other kind 100%). James approved the answer set as written.
 
 ## Stage 6: Rich answers
 - Read-only display tools built on `lib/knowledge/queries.ts`: `getProject`,
