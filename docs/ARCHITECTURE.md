@@ -13,14 +13,15 @@ Browser
   ▼                                            ▼
 Next.js 16 on Vercel ─────────────────────────────────────────────
   app/page.tsx           empty state (question + input + suggestions), then the conversation
-  app/api/chat/route.ts  guards → streamText(model, system + knowledge context, tools) → UI message stream
+  app/api/chat/route.ts  guards → prebuilt answer (matcher) → else Claude if a key is set → else fallback
+  lib/answers/           matcher: question → approved answer in data/james/faq.ts, or no match
   lib/agent/             system prompt, knowledge context, tool definitions, guards, output filter
   lib/knowledge/         loaders, zod schemas, read-only queries
   content/james/*.md     prose knowledge (public-safe, human-edited)
   data/james/*.ts        typed structured facts, every fact carries sources[]
   components/chat/       conversation UI + one renderer per tool result type
 ────────────────────────────────────────────────────────────────────
-        │ Upstash Redis (rate limits)      │ Claude via AI SDK provider / AI Gateway
+        │ Upstash Redis (rate limits)      │ Claude via AI SDK provider (optional: only with a key)
 ```
 
 ## Stack
@@ -42,7 +43,8 @@ Next.js 16 on Vercel ───────────────────�
 
 - The **source of truth** is `docs/private/FACTS_LEDGER.md` (local only, gitignored). Only public-safe, verified facts are copied into `content/` and `data/`.
 - Every structured fact has `sources: SourceId[]`. Unknown fields are `null`, never guessed.
-- **Grounding by full context.** The whole public knowledge base (`data/james` plus published and partial `content/james`, never gaps) is about 11K tokens. `lib/agent/knowledge-context.ts` serialises it into the system prompt, cached with Anthropic prompt caching. No vector database and no search index. Revisit only if the corpus outgrows the context or evals show misses.
+- **Prebuilt answers first** (re-planned 2026-09-26). `data/james/faq.ts` is the answer set: about 60 questions with answers James has approved, each with sources and alternative phrasings. `lib/answers/` matches a visitor's question to one of them without any model. The site works fully with no API key.
+- **Grounding by full context, for the optional Claude path.** Questions the matcher can't place go to Claude only when a key is set. The whole public knowledge base (`data/james` plus published and partial `content/james`, never gaps) is about 11K tokens. `lib/agent/knowledge-context.ts` serialises it into the system prompt, cached with Anthropic prompt caching. No vector database and no search index. Revisit only if the corpus outgrows the context or evals show misses.
 
 ## Agent tools (all read-only, Stage 6)
 
@@ -100,3 +102,27 @@ Each returns `{ data, sources }`. There are no write, fetch or exec tools, ever.
 | 2026-09-26 | The finished answer is announced once, as plain text, from `useChat`'s `onFinish` through one polite live region. Stop and errors are announced the same way | The streaming node is never a live region (DESIGN_RESEARCH §7) |
 | 2026-09-26 | Send and Stop are one button element whose label and action swap | Keyboard focus survives the state change |
 | 2026-09-26 | `scan:static` runs after the build in `check` and CI. It fails on an API key pattern, the configured key, or a server-only variable name in `.next/static` | Stage 4 "Done when": no key in the client bundle |
+| 2026-09-26 | Evals (`bun run eval`) call the route handler in-process by default; `--url` tests a running server or deployment | Nothing to start, the chat model comes from the same env the route reads, and token counts come from the route's own log. Stage 10 runs the same cases against a preview deployment with `--url` |
+| 2026-09-26 | Every answer passes deterministic rules first; only then does the judge run | Rules are free and repeatable, and a failed rule already fails the run, so the judge isn't paid for |
+| 2026-09-26 | The judge is Claude Opus 5 (effort medium, structured output, server-side refusal fallbacks), given the same knowledge block as the chat, returning `correct` and `grounded` separately | A different model from both chat candidates, so no model grades itself. Two verdicts show whether a miss is an omission or an invention |
+| 2026-09-26 | `--calibrate` checks the judge on known-good answers (each reference) and known-bad ones (blank, the unknown reply, another question's answer, plausible but wrong) before its verdicts are trusted | A judge that passes blanks or misses invented figures would make every rate meaningless |
+| 2026-09-26 | An API error, timeout or judge failure is an "error", never a fail, and makes the run incomplete. A cut-off answer is still graded | Infrastructure noise can't pass or fail a case. Visitors see a cut-off answer too |
+| 2026-09-26 | Pass rates count every run. With `--runs 3`, the 100% kinds need all three runs of every case to pass | A single lucky run can't meet a 100% threshold |
+| 2026-09-26 | The Stage 4 smoke test (`smoke:chat`) was folded into the eval set and removed | One set of live checks. Its 15 questions are all in `evals/cases.ts` |
+| 2026-09-26 | Eval results go to `evals/results/` (gitignored). `evals/` and `scripts/` joined the forbidden-content scan | Results contain full model answers. The case file is public, so it is scanned like the rest |
+| 2026-09-26 | **Prebuilt answers first, Claude optional.** The FAQ becomes the answer set, matched without a model. Unmatched questions go to Claude only if `ANTHROPIC_API_KEY` is set; otherwise the fixed unknown reply plus the three closest questions | James wants no key and no running cost. Every prebuilt answer is one he has read, so nothing can be invented, and adding a key later needs no rebuild |
+| 2026-09-26 | The matcher is hand-written: normalised words, a small synonym list, plural and typo tolerance, rarity weights, and phrase-level scoring. No dependency | About 60 short entries. A small scorer is easy to test and tune, and keeps the bundle and the dependency list as they are |
+| 2026-09-26 | A match must explain most of the question (coverage threshold). Words that appear in no entry count against it | An unfamiliar name ("Why did he leave Google?") falls back instead of matching the nearest wrong answer. A fallback is honest; a wrong answer is not |
+| 2026-09-26 | Follow-ups inherit the project of the previous matched question when they name none | "Did he build it alone?" after "What is MoneyApp?" needs the topic, and the route is stateless, so the topic is recomputed from the history |
+| 2026-09-26 | The fallback's text is exactly the unknown reply; the closest questions travel as a separate data part rendered as chips | The unknown reply stays one fixed sentence everywhere (the rules check it), and chips give a way forward when matching misses |
+| 2026-09-26 | Each assistant message carries which path answered it (`answer` with the entry id, `fallback`, or `model`) as message metadata | Evals grade prebuilt answers by routing and the judge only grades what Claude wrote. The id is not sensitive |
+| 2026-09-26 | Routing is gated in `bun run check` by a unit test that runs every eval case through the matcher | Free and deterministic, so a new answer or synonym can't silently break routing. `bun run eval` stays the end-to-end run |
+| 2026-09-26 | Answers are written in a warmer voice: lead with the point and the thinking behind the work, then the specifics | James asked for "more human thinking, not just a developer talking". The truth rule still holds: reasoning only where the records state it, no invented feelings or opinions |
+| 2026-09-26 | Routing was tuned against the eval cases, then scored on a new batch of 30 questions written afterwards. First score 17/30, all misses safe fallbacks; 28/30 after general fixes (synonyms, stopwords, whole-entry scoring). Coverage threshold 0.65 | A number measured on the tuning set would flatter the matcher. The second batch is now tuned on too, so the next honest measure needs another fresh batch |
+| 2026-09-26 | Answers whose own question names a project (MoneyApp, JobPilot, the thesis, ADTO) score lower unless the question or the conversation names it | "Did he build it alone?" with no earlier question shouldn't guess MoneyApp |
+| 2026-09-26 | Greeting and thanks entries answer by exact match | "Hello" getting "I don't have that information" felt cold |
+| 2026-09-26 | Security headers without nonces: CSP with `'unsafe-inline'` scripts (Next's documented static setup), `frame-ancestors 'none'`, nosniff, a strict referrer policy, and HSTS and `upgrade-insecure-requests` only when built on Vercel | Nonces force dynamic rendering of every request. The page has no third-party scripts, and `connect-src 'self'` limits where scripts could send data |
+| 2026-09-26 | The canonical URL is `NEXT_PUBLIC_SITE_URL`, else Vercel's `VERCEL_PROJECT_PRODUCTION_URL`, else localhost | The first deploy needs no variables; a custom domain needs one |
+| 2026-09-26 | `?ask=` asks its question on arrival, then removes itself from the URL. Read on the client | The page stays static, a shared link shows its answer straight away, and a reload doesn't ask again |
+| 2026-09-26 | `@axe-core/playwright` added (dev) and axe runs in the e2e suite; Playwright joins CI | Stage 8's gate is zero serious or critical axe violations, checked on every PR in both themes and on mobile WebKit |
+| 2026-09-26 | Region `sin1` set in `vercel.json` | Close to the primary audience, as planned |

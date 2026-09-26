@@ -4,7 +4,9 @@
 A chatbot that answers questions about James, grounded in his real work. The chat is the
 product: the site opens on a single question and an input, like ChatGPT's empty state, and
 there are no portfolio pages (re-planned 2026-09-26). The look is close to ChatGPT:
-near-black, neutral sans, white and greys.
+near-black, neutral sans, white and greys. Answers come from a prebuilt set James approves
+(`data/james/faq.ts`), matched without a model, so the site needs no API key; Claude only
+answers unmatched questions if a key is set.
 
 ## How work happens here
 One stage or feature per chat session. Start with `/session-start`, end with
