@@ -1,10 +1,12 @@
 "use client";
 
 import { useChat } from "@ai-sdk/react";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Chip } from "@/components/ui/chip";
+import type { ChatMessage } from "@/lib/chat/message";
 import { markdownToPlainText } from "@/lib/chat/plain-text";
 import { cx } from "@/lib/cx";
+import { LIMITS } from "@/lib/agent/limits";
 import { Composer, type ComposerHandle } from "./composer";
 import { COPY } from "./copy";
 import { NewChatIcon } from "./icons";
@@ -36,7 +38,7 @@ export function Chat() {
     error,
     setMessages,
     clearError,
-  } = useChat({
+  } = useChat<ChatMessage>({
     throttle: 50,
     onFinish: ({ message, isAbort, isError }) => {
       if (isError) return;
@@ -58,6 +60,24 @@ export function Chat() {
     void sendMessage({ text: question });
     return true;
   }
+
+  // A shared link such as /?ask=What+is+MoneyApp%3F asks its question once, on arrival.
+  // The parameter is then removed, so a reload or a copied URL doesn't ask it again.
+  const askedFromLink = useRef(false);
+  useEffect(() => {
+    if (askedFromLink.current) return;
+    askedFromLink.current = true;
+    const url = new URL(window.location.href);
+    const question = url.searchParams
+      .get("ask")
+      ?.trim()
+      .slice(0, LIMITS.userChars);
+    if (!question) return;
+    url.searchParams.delete("ask");
+    window.history.replaceState(null, "", url);
+    send(question);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- runs once, on arrival
+  }, []);
 
   function retry() {
     composer.current?.focus();
@@ -109,6 +129,10 @@ export function Chat() {
             status={status}
             error={error}
             onRetry={retry}
+            onAsk={(question) => {
+              // The chips leave with the answer they belong to, so focus moves to the input.
+              if (send(question)) composer.current?.focus();
+            }}
           />
         )}
 

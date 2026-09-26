@@ -1,14 +1,25 @@
 import { expect, test, type Page } from "@playwright/test";
 
 // The server runs with CHAT_MODEL_MOCK=1 (playwright.config.ts). See lib/agent/model.ts.
+// Questions the prebuilt answer set covers get approved answers; anything else goes to
+// the mock model, which stands in for Claude.
 const MOCK_TEXT = "mock answer from the test model";
 const SLOW = "[slow]";
+/** A question no prebuilt answer covers, so it reaches the (mock) model. */
+const UNMATCHED = "What is the airspeed of an unladen swallow?";
+/** A covered question and a phrase from its approved answer. */
+const MATCHED = "What has James built?";
+const MATCHED_TEXT = "Four you can ask about";
+const EMAIL = "jamesmanonog@gmail.com";
 
 const input = (page: Page) =>
   page.getByRole("textbox", { name: "Ask a question about James" });
 const announcer = (page: Page) => page.locator('[aria-live="polite"]');
+// Only the conversation's own items: an answer can contain a Markdown list of its own.
 const answers = (page: Page) =>
-  page.getByRole("region", { name: "Conversation" }).getByRole("listitem");
+  page
+    .getByRole("region", { name: "Conversation" })
+    .locator(":scope > ol > li");
 
 async function ask(page: Page, question: string) {
   await input(page).fill(question);
@@ -36,10 +47,10 @@ test("empty state: one question, a labelled input and a suggestion", async ({
 });
 
 test("Enter sends a question and the answer streams in", async ({ page }) => {
-  await ask(page, "What has James built?");
+  await ask(page, UNMATCHED);
 
   await expect(input(page)).toHaveValue("");
-  await expect(answers(page).first()).toContainText("What has James built?");
+  await expect(answers(page).first()).toContainText(UNMATCHED);
   await expect(answers(page).last()).toContainText(MOCK_TEXT);
   // Markdown renders as elements, not asterisks.
   await expect(answers(page).last().locator("strong")).toHaveText(
@@ -62,11 +73,79 @@ test("Shift+Enter adds a line instead of sending", async ({ page }) => {
   );
 });
 
-test("the suggestion chip asks its question", async ({ page }) => {
+test("the suggestion chip asks its question and gets the approved answer", async ({
+  page,
+}) => {
   await page.getByRole("button", { name: "What can James do?" }).click();
   await expect(answers(page).first()).toContainText("What can James do?");
-  await expect(answers(page).last()).toContainText(MOCK_TEXT);
+  await expect(answers(page).last()).toContainText(
+    "Most of James's work sits where systems meet",
+  );
   await expect(input(page)).toBeFocused();
+});
+
+test("an approved answer offers related questions, and a chip asks one", async ({
+  page,
+}) => {
+  await ask(page, "Does MoneyApp process payments?");
+  await expect(answers(page).last()).toContainText(
+    "a claim alone never clears a debt",
+  );
+  const related = page.getByRole("group", { name: "Related" });
+  await expect(related.getByRole("button")).toHaveCount(3);
+
+  await related.getByRole("button", { name: "What is MoneyApp?" }).click();
+  await expect(answers(page).last()).toContainText(
+    "keeps track of who owes whom",
+  );
+  await expect(input(page)).toBeFocused();
+  // Only the latest answer carries chips.
+  await expect(page.getByRole("group", { name: "Related" })).toHaveCount(1);
+});
+
+test("a question it can't answer offers the closest questions", async ({
+  page,
+}) => {
+  // Without a key the route answers unmatched questions like this; the e2e server has
+  // the mock model instead, so the response is stubbed in the same format.
+  await page.route("**/api/chat", (route) =>
+    route.fulfill({
+      headers: {
+        "content-type": "text/event-stream",
+        "x-vercel-ai-ui-message-stream": "v1",
+      },
+      body: [
+        { type: "start", messageMetadata: { source: "fallback" } },
+        { type: "text-start", id: "answer" },
+        {
+          type: "text-delta",
+          id: "answer",
+          delta: `I don't have that information. You can ask James directly at ${EMAIL}.`,
+        },
+        { type: "text-end", id: "answer" },
+        {
+          type: "data-suggestions",
+          data: {
+            kind: "closest",
+            questions: ["What can James do?", "How can I contact James?"],
+          },
+        },
+        { type: "finish", finishReason: "stop" },
+      ]
+        .map((chunk) => `data: ${JSON.stringify(chunk)}\n\n`)
+        .concat("data: [DONE]\n\n")
+        .join(""),
+    }),
+  );
+  await ask(page, "What's James's favourite IDE?");
+  await expect(answers(page).last()).toContainText(
+    "I don't have that information",
+  );
+  await expect(
+    page
+      .getByRole("group", { name: "Closest questions I can answer" })
+      .getByRole("button"),
+  ).toHaveCount(2);
 });
 
 test("Stop ends a streaming answer", async ({ page }) => {
@@ -82,7 +161,7 @@ test("Stop ends a streaming answer", async ({ page }) => {
   await expect(announcer(page)).toHaveText("Answer stopped.");
   await expect(answers(page).last()).not.toContainText("word120");
   // The stopped chat still takes the next question.
-  await ask(page, "Next question");
+  await ask(page, UNMATCHED);
   await expect(answers(page).last()).toContainText(MOCK_TEXT);
 });
 
@@ -105,7 +184,7 @@ test("an error shows Retry, and Retry asks again", async ({ page }) => {
   await expect(announcer(page)).toHaveText("The answer couldn't be loaded.");
 
   await page.getByRole("button", { name: "Retry" }).click();
-  await expect(answers(page).last()).toContainText(MOCK_TEXT);
+  await expect(answers(page).last()).toContainText("Davao City");
   await expect(
     conversation.getByText("The answer couldn't be loaded."),
   ).toHaveCount(0);
@@ -116,8 +195,8 @@ test("an error shows Retry, and Retry asks again", async ({ page }) => {
 });
 
 test("New chat returns to the empty state", async ({ page }) => {
-  await ask(page, "What has James built?");
-  await expect(answers(page).last()).toContainText(MOCK_TEXT);
+  await ask(page, MATCHED);
+  await expect(answers(page).last()).toContainText(MATCHED_TEXT);
 
   await page.getByRole("button", { name: "New chat" }).click();
   await expect(
@@ -157,9 +236,9 @@ test("works by keyboard alone", async ({ page, browserName }) => {
   // Asking by keyboard keeps focus in the input for the follow-up.
   await page.keyboard.press("Shift+Tab");
   await page.keyboard.press("Shift+Tab");
-  await page.keyboard.type("What has James built?");
+  await page.keyboard.type(MATCHED);
   await page.keyboard.press("Enter");
-  await expect(answers(page).last()).toContainText(MOCK_TEXT);
+  await expect(answers(page).last()).toContainText(MATCHED_TEXT);
   await expect(input(page)).toBeFocused();
 
   // Stop is reachable from the input, and focus stays on the same button after.
@@ -188,8 +267,10 @@ test.describe("at 320px", () => {
       );
     expect(await overflow()).toBe(0);
 
-    await ask(page, "What has James built?");
-    await expect(answers(page).last()).toContainText(MOCK_TEXT);
+    await ask(page, MATCHED);
+    await expect(answers(page).last()).toContainText(MATCHED_TEXT);
+    // The answer's chips wrap instead of widening the page.
+    await expect(page.getByRole("group", { name: "Related" })).toBeVisible();
     expect(await overflow()).toBe(0);
     await expect(input(page)).toBeInViewport();
   });

@@ -2,6 +2,7 @@
 
 import {
   useImperativeHandle,
+  useEffect,
   useLayoutEffect,
   useRef,
   useState,
@@ -30,6 +31,11 @@ type ComposerProps = {
 
 /** Grows with its content up to this height, then scrolls. */
 const MAX_HEIGHT_PX = 200;
+function fitHeight(el: HTMLTextAreaElement): void {
+  el.style.height = "auto";
+  el.style.height = `${Math.min(el.scrollHeight, MAX_HEIGHT_PX)}px`;
+}
+
 /** Show the character count from here on. */
 const COUNT_FROM = LIMITS.userChars - 100;
 
@@ -59,10 +65,22 @@ export function Composer({
 
   useLayoutEffect(() => {
     const el = textarea.current;
-    if (!el) return;
-    el.style.height = "auto";
-    el.style.height = `${Math.min(el.scrollHeight, MAX_HEIGHT_PX)}px`;
+    if (el) fitHeight(el);
   }, [value]);
+
+  // Text rewraps when the width changes (rotation, or a tab that loaded while hidden).
+  useEffect(() => {
+    const el = textarea.current;
+    if (!el) return;
+    let width = el.clientWidth;
+    const observer = new ResizeObserver(() => {
+      if (el.clientWidth === width) return;
+      width = el.clientWidth;
+      fitHeight(el);
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   const empty = value.trim() === "";
 
