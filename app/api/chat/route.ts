@@ -2,27 +2,33 @@ import {
   createUIMessageStreamResponse,
   streamText,
   toUIMessageStream,
+  type ToolSet,
 } from "ai";
 import { systemPrompt } from "@/lib/agent/instructions";
 import { chatModel, MAX_OUTPUT_TOKENS } from "@/lib/agent/model";
 import { parseChatRequest } from "@/lib/agent/request";
+import { respond } from "@/lib/answers/respond";
+import { replyStream } from "@/lib/answers/stream";
+import type { ChatMessage } from "@/lib/chat/message";
 import { env } from "@/lib/env";
 
 // Streams can outlast the default function limit on Vercel.
 export const maxDuration = 60;
 
+/**
+ * Prebuilt answers first. A question the matcher can't place goes to Claude only when a
+ * model is configured; otherwise it gets the fixed unknown reply and the closest questions.
+ */
 export async function POST(request: Request) {
   const parsed = await parseChatRequest(request);
   if (!parsed.ok) {
     return Response.json({ error: parsed.error }, { status: parsed.status });
   }
 
-  const chat = chatModel(env);
+  const reply = respond(parsed.messages);
+  const chat = reply.source === "fallback" ? chatModel(env) : null;
   if (!chat) {
-    return Response.json(
-      { error: "The chat is not available right now." },
-      { status: 503 },
-    );
+    return createUIMessageStreamResponse({ stream: replyStream(reply) });
   }
 
   const result = streamText({
@@ -51,6 +57,10 @@ export async function POST(request: Request) {
   });
 
   return createUIMessageStreamResponse({
-    stream: toUIMessageStream({ stream: result.stream }),
+    stream: toUIMessageStream<ToolSet, ChatMessage>({
+      stream: result.stream,
+      messageMetadata: ({ part }) =>
+        part.type === "start" ? { source: "model" } : undefined,
+    }),
   });
 }

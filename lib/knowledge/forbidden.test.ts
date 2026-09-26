@@ -13,7 +13,16 @@ import { knowledge } from "./james";
 const ROOT = process.cwd();
 
 /** Public text the site, the agent or the repo can show. */
-const SCAN_DIRS = ["app", "components", "content", "data", "lib", "docs"];
+const SCAN_DIRS = [
+  "app",
+  "components",
+  "content",
+  "data",
+  "lib",
+  "docs",
+  "evals",
+  "scripts",
+];
 const SCAN_ROOT_FILES = ["README.md", "CLAUDE.md", "AGENTS.md"];
 const TEXT_EXTENSIONS = new Set([
   ".ts",
@@ -23,7 +32,7 @@ const TEXT_EXTENSIONS = new Set([
   ".json",
   ".css",
 ]);
-const SKIP = [/^docs\/private\//, /\.test\.tsx?$/];
+const SKIP = [/^docs\/private\//, /^evals\/results\//, /\.test\.tsx?$/];
 
 function walk(dir: string): string[] {
   let entries: string[];
