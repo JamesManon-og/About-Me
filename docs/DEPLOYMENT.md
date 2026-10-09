@@ -38,17 +38,16 @@ All three must pass. `bun run eval` should end with `PASSED: every kind met its 
 
 ## First deploy (about 10 minutes)
 
-1. Merge the stage branch into `main` on GitHub.
-2. Sign in at [vercel.com](https://vercel.com) with your GitHub account.
-3. **Add New → Project**, then import `JamesManon-og/About-Me`.
-4. Leave the detected settings: framework **Next.js**. Vercel sees `bun.lock` and installs
+1. Sign in at [vercel.com](https://vercel.com) with your GitHub account.
+2. **Add New → Project**, then import `JamesManon-og/About-Me`.
+3. Leave the detected settings: framework **Next.js**. Vercel sees `bun.lock` and installs
    with bun. The build command stays `next build`.
-5. **Environment variables: add none.** In particular:
+4. **Environment variables: add none.** In particular:
    - Don't set `CHAT_MODEL_MOCK`. The build refuses it on production, on purpose.
    - Don't set `ANTHROPIC_API_KEY` yet. See [Turning on Claude](#turning-on-claude-optional-costs-money).
-6. **Deploy.** The first build takes a minute or two and gives you a URL like
+5. **Deploy.** The first build takes a minute or two and gives you a URL like
    `about-me-xxxx.vercel.app`.
-7. In **Settings → General → Node.js Version**, choose **22.x** to match `.nvmrc`.
+6. In **Settings → General → Node.js Version**, choose **22.x** to match `.nvmrc`.
 
 From then on, every push to `main` deploys to production, and every pull request gets
 its own preview URL.
